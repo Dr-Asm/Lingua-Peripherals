@@ -49,7 +49,7 @@ public class WrenchHandler {
                 Direction currentFacing = state.getValue(NarratorBlock.FACING);
                 Direction newFacing = currentFacing.getClockWise();
                 level.setBlock(pos, state.setValue(NarratorBlock.FACING, newFacing), 3);
-                level.playSound(null, pos, SoundEvents.NOTE_BLOCK_PLING, SoundSource.BLOCKS, 1.0f, 1.0f);
+                level.playSound(null, pos, SoundEvents.NOTE_BLOCK_PLING.value(), SoundSource.BLOCKS, 1.0f, 1.0f);
             }
         }
     }

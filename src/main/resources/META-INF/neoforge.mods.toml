@@ -1,14 +1,15 @@
 modLoader = "javafml"
 loaderVersion = "[4,)"
+license = "MIT"
 
 [[mods]]
 modId = "linguaperipherals"
 version = "1.0.0"
 displayName = "Lingua Peripherals"
 displayURL = "https://github.com/DrAsm/linguaperipherals"
-logoFile = "linguaperipherals.png"
 credits = "Dr_Asm"
 authors = "Dr_Asm"
+logoFile = "linguaperipherals.png"
 description = "A CC: Tweaked addon that adds language-related peripherals."
 
 [[dependencies.linguaperipherals]]
