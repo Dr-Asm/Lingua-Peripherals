@@ -1,0 +1,29 @@
+# Java
+*.class
+*.jar
+*.log
+
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Minecraft
+run/
+out/
+
+# Local
+libs/

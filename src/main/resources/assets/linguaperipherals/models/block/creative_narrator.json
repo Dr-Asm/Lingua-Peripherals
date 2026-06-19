@@ -1,0 +1,1 @@
+{ "parent": "minecraft:block/orientable_with_bottom", "textures": { "top": "linguaperipherals:block/speaker_top", "bottom": "linguaperipherals:block/speaker_bottom", "side": "linguaperipherals:block/speaker_side", "front": "linguaperipherals:block/creative_speaker_front" } }

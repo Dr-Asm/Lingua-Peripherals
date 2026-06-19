@@ -1,0 +1,1 @@
+{ "variants": { "facing=north": { "model": "linguaperipherals:block/creative_narrator", "y": 180 }, "facing=south": { "model": "linguaperipherals:block/creative_narrator", "y": 0 }, "facing=west": { "model": "linguaperipherals:block/creative_narrator", "y": 90 }, "facing=east": { "model": "linguaperipherals:block/creative_narrator", "y": 270 } } }
