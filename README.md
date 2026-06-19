@@ -1,5 +1,7 @@
 # Lingua Peripherals
 
+> [中文文档 (Chinese Documentation)](README_CN.md)
+
 ## Overview
 
 Lingua Peripherals is an addon mod for [CC: Tweaked](https://github.com/cc-tweaked/CC-Tweaked) that adds language-related peripherals controllable via Computers. Currently includes the Narrator block, which uses Minecraft's built-in Narrator system for text-to-speech playback.
@@ -27,7 +29,7 @@ Lingua Peripherals is an addon mod for [CC: Tweaked](https://github.com/cc-tweak
 
 ### Peripheral Methods
 
-When a Narrator is placed adjacent to a CC: Tweaked computer, it is recognized as a peripheral via peripheral.find("narrator").
+When a Narrator is placed adjacent to a CC: Tweaked computer, it is recognized as a peripheral via `peripheral.find("narrator")`.
 
 #### playVoice(text [, rad])
 
@@ -38,11 +40,11 @@ Plays the specified text as speech. Players are filtered by distance.
 - rad (number, optional) - Maximum audible radius in blocks. Default: 16. Values exceeding the globalMaxRange config limit will be clamped.
 
 **Example:**
-`lua
+```lua
 local speaker = peripheral.find("narrator")
 speaker.playVoice("Hello, world!")          -- default radius 16
 speaker.playVoice("Welcome to my base", 32) -- radius 32
-`
+```
 
 ### Creative Narrator Method
 
@@ -51,31 +53,33 @@ speaker.playVoice("Welcome to my base", 32) -- radius 32
 Plays the voice message to all players across all dimensions and positions, ignoring distance.
 
 **Example:**
-`lua
+```lua
 local speaker = peripheral.find("creative_narrator")
 speaker.globalVoice("Attention all players!")
-`
+```
 
 ### Playback Complete Event
 
 Voice playback is asynchronous. Use the voice_finished event for sequential playback:
 
-`lua
+```lua
 local speaker = peripheral.find("narrator")
 
 speaker.playVoice("First message")
 os.pullEvent("voice_finished")
 
 speaker.playVoice("Second message")
-`
+```
 
 ### Chinese Text Support
 
-Use Unicode escape sequences for Chinese TTS:
+Since CC: Tweaked does not natively support Chinese characters, use Unicode escape sequences for Chinese TTS.
 
-`lua
+**Online converter:** Visit [Unicode Escape Converter](https://unicode-converter.soe-hentai.win/) to convert Chinese text to \uXXXX format instantly.
+
+```lua
 speaker.playVoice("\\u4f60\\u597d\\uff0c\\u4e16\\u754c")
-`
+```
 
 ## Configuration
 
@@ -94,8 +98,8 @@ The config file lingua_peripherals.conf is in config/:
 
 ### Building
 
-`ash
+```bash
 ./gradlew build
-`
+```
 
 The built jar will be in build/libs/.

@@ -43,11 +43,11 @@ Lingua Peripherals 是 [CC: Tweaked](https://github.com/cc-tweaked/CC-Tweaked) �
 - 服务器端按距离过滤后再向客户端播报。
 
 **示例：**
-`lua
+```lua
 local speaker = peripheral.find("narrator")
 speaker.playVoice("Hello, world!")         -- 默认半径 16 格
 speaker.playVoice("Welcome to my base", 32) -- 半径 32 格
-`
+```
 
 ### 创造讲述者专属方法
 
@@ -59,17 +59,17 @@ speaker.playVoice("Welcome to my base", 32) -- 半径 32 格
 - text (string) - 需要朗读的文本。
 
 **示例：**
-`lua
+```lua
 local speaker = peripheral.find("creative_narrator")
 speaker.globalVoice("Attention all players!")
-`
+```
 
 ### 播放完成事件
 
 语音播报是异步进行的（在客户端播放），playVoice 和 globalVoice 会立即返回。如需按顺序播报多段文本，可以使用 voice_finished 事件等待前一段播完。
 
 **示例（顺序播报）：**
-`lua
+```lua
 local speaker = peripheral.find("narrator")
 
 speaker.playVoice("First message")
@@ -79,18 +79,20 @@ speaker.playVoice("Second message")
 os.pullEvent("voice_finished")
 
 speaker.playVoice("Third message")
-`
+```
 
 **注意：** 延时为估算值（至少 1.5 秒），并非精确的播放结束时间。
 
 ### 中文语音支持
 
-由于 CC: Tweaked 不支持中文字符串的直接输入，播放中文语音时需要使用 Unicode 转义序列：
+由于 CC: Tweaked 不支持中文字符串的直接输入，播放中文语音时需要使用 Unicode 转义序列。
 
-`lua
+**在线转换工具：** 访问 [Unicode 转义字符串转换器](https://unicode-converter.soe-hentai.win/) 即可将中文文本转换为 \uXXXX 格式。
+
+```lua
 local speaker = peripheral.find("narrator")
 speaker.playVoice("\\u4f60\\u597d\\uff0c\\u4e16\\u754c") -- "你好，世界"
-`
+```
 
 ## 配置
 
@@ -111,8 +113,8 @@ speaker.playVoice("\\u4f60\\u597d\\uff0c\\u4e16\\u754c") -- "你好，世界"
 
 ### 构建
 
-`ash
+```bash
 ./gradlew build
-`
+```
 
 构建产物位于 build/libs/ 目录。
