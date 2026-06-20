@@ -10,8 +10,8 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.Container;
-import net.minecraft.world.MenuProvider;
 import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -23,36 +23,37 @@ import org.jetbrains.annotations.Nullable;
 
 public class CassetteDriveBlockEntity extends BlockEntity implements MenuProvider {
     private final NonNullList<ItemStack> items = NonNullList.withSize(1, ItemStack.EMPTY);
+    private final Container inventory = new Container() {
+        @Override public int getContainerSize() { return 1; }
+        @Override public boolean isEmpty() { return items.get(0).isEmpty(); }
+        @Override public ItemStack getItem(int slot) { return items.get(slot); }
+        @Override public ItemStack removeItem(int slot, int amount) {
+            ItemStack result = ContainerHelper.removeItem(items, slot, amount);
+            if (!result.isEmpty()) updateBlockState();
+            return result;
+        }
+        @Override public ItemStack removeItemNoUpdate(int slot) {
+            ItemStack result = ContainerHelper.takeItem(items, slot);
+            if (!result.isEmpty()) updateBlockState();
+            return result;
+        }
+        @Override public void setItem(int slot, ItemStack stack) {
+            items.set(slot, stack);
+            updateBlockState();
+        }
+        @Override public void setChanged() { CassetteDriveBlockEntity.this.setChanged(); }
+        @Override public boolean stillValid(Player player) {
+            return Container.stillValidBlockEntity(CassetteDriveBlockEntity.this, player);
+        }
+        @Override public void clearContent() { items.clear(); updateBlockState(); }
+    };
 
     public CassetteDriveBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.CASSETTE_DRIVE_BE.get(), pos, state);
     }
 
     public Container getInventory() {
-        return new Container() {
-            @Override public int getContainerSize() { return 1; }
-            @Override public boolean isEmpty() { return items.get(0).isEmpty(); }
-            @Override public ItemStack getItem(int slot) { return items.get(slot); }
-            @Override public ItemStack removeItem(int slot, int amount) {
-                ItemStack result = ContainerHelper.removeItem(items, slot, amount);
-                if (!result.isEmpty()) updateBlockState();
-                return result;
-            }
-            @Override public ItemStack removeItemNoUpdate(int slot) {
-                ItemStack result = ContainerHelper.takeItem(items, slot);
-                if (!result.isEmpty()) updateBlockState();
-                return result;
-            }
-            @Override public void setItem(int slot, ItemStack stack) {
-                items.set(slot, stack);
-                updateBlockState();
-            }
-            @Override public void setChanged() { CassetteDriveBlockEntity.this.setChanged(); }
-            @Override public boolean stillValid(Player player) {
-                return Container.stillValidBlockEntity(CassetteDriveBlockEntity.this, player);
-            }
-            @Override public void clearContent() { items.clear(); updateBlockState(); }
-        };
+        return inventory;
     }
 
     private void updateBlockState() {
@@ -68,7 +69,7 @@ public class CassetteDriveBlockEntity extends BlockEntity implements MenuProvide
             }
             BlockState bs = getBlockState();
             if (bs.getBlock() instanceof CassetteDriveBlock) {
-                level.setBlock(worldPosition, bs.setValue(CassetteDriveBlock.CASSETTE_STATE, state), 3);
+                level.setBlock(worldPosition, bs.setValue(CassetteDriveBlock.CASSETTE_STATE, state), 2);
             }
         }
     }

@@ -23,6 +23,7 @@ import org.jetbrains.annotations.Nullable;
 
 @SuppressWarnings("deprecation")
 public class CassetteDriveBlock extends HorizontalDirectionalBlock implements EntityBlock {
+    private static final MapCodec<CassetteDriveBlock> CODEC = simpleCodec(CassetteDriveBlock::new);
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
     public static final EnumProperty<CassetteState> CASSETTE_STATE =
             EnumProperty.create("cassette_state", CassetteState.class);
@@ -36,7 +37,7 @@ public class CassetteDriveBlock extends HorizontalDirectionalBlock implements En
 
     @Override
     protected MapCodec<? extends HorizontalDirectionalBlock> codec() {
-        return simpleCodec(CassetteDriveBlock::new);
+        return CODEC;
     }
 
     @Override

@@ -46,5 +46,5 @@ public class ModBlocks {
             () -> new BlockItem(CASSETTE_DRIVE.get(), new Item.Properties()));
 
     public static final DeferredItem<CassetteTapeItem> CASSETTE_TAPE = ITEMS.register("cassette_tape",
-            () -> new CassetteTapeItem(new Item.Properties().stacksTo(64)));
+            () -> new CassetteTapeItem(new Item.Properties().stacksTo(1)));
 }

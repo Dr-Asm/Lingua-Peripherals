@@ -7,6 +7,7 @@ import dan200.computercraft.api.lua.LuaFunction;
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import com.linguaperipherals.mod.util.TextUtils;
 
 public class CreativeNarratorPeripheral extends NarratorPeripheral {
 
@@ -21,7 +22,7 @@ public class CreativeNarratorPeripheral extends NarratorPeripheral {
 
     @LuaFunction
     public final boolean globalVoice(String text) throws LuaException {
-        String decodedText = decodeEscapeSequences(text);
+        String decodedText = TextUtils.decodeEscapeSequences(text);
 
         if (blockEntity.getWorld() == null || blockEntity.getWorld().isClientSide) return false;
 

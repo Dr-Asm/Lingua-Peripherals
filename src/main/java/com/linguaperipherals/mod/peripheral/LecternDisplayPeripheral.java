@@ -1,5 +1,6 @@
 package com.linguaperipherals.mod.peripheral;
 
+import com.linguaperipherals.mod.util.TextUtils;
 import dan200.computercraft.api.lua.LuaException;
 import dan200.computercraft.api.lua.LuaFunction;
 import dan200.computercraft.api.peripheral.IComputerAccess;
@@ -57,9 +58,7 @@ public class LecternDisplayPeripheral implements IPeripheral {
     }
 
     @LuaFunction
-    public final int getPage() {
-        return currentPage + 1;
-    }
+    public final int getPage() { return currentPage + 1; }
 
     @LuaFunction
     public final void setPage(int page) {
@@ -76,26 +75,21 @@ public class LecternDisplayPeripheral implements IPeripheral {
         if (c == null) return "";
         int idx = page - 1;
         if (idx >= c.pages().size()) return "";
-        return encodeNonAscii(c.pages().get(idx).get(true));
+        return TextUtils.encodeNonAscii(c.pages().get(idx).get(true));
     }
 
     @LuaFunction(mainThread = true)
     public final void writePage(int page, String text) throws LuaException {
         if (page < 1) throw new LuaException("page must be >= 1");
-        String decoded = validateLength(decodeEscapeSequences(text));
+        String decoded = validateLength(TextUtils.decodeEscapeSequences(text));
         ItemStack book = lectern.getBook();
         if (book.isEmpty()) return;
         if (!book.is(Items.WRITABLE_BOOK)) return;
-
         WritableBookContent c = book.get(DataComponents.WRITABLE_BOOK_CONTENT);
         if (c == null) return;
         List<Filterable<String>> pages = new ArrayList<>(c.pages());
-
-        while (pages.size() < page)
-            pages.add(Filterable.passThrough(""));
-
+        while (pages.size() < page) pages.add(Filterable.passThrough(""));
         pages.set(page - 1, Filterable.passThrough(decoded));
-
         book.set(DataComponents.WRITABLE_BOOK_CONTENT, new WritableBookContent(pages));
         lectern.setBook(book);
     }
@@ -106,16 +100,30 @@ public class LecternDisplayPeripheral implements IPeripheral {
         ItemStack book = lectern.getBook();
         if (book.isEmpty()) return;
         if (!book.is(Items.WRITABLE_BOOK)) return;
-
         WritableBookContent c = book.get(DataComponents.WRITABLE_BOOK_CONTENT);
         if (c == null) return;
         List<Filterable<String>> pages = new ArrayList<>(c.pages());
-
-        if (page <= pages.size())
-            pages.set(page - 1, Filterable.passThrough(""));
-
+        if (page <= pages.size()) pages.set(page - 1, Filterable.passThrough(""));
         book.set(DataComponents.WRITABLE_BOOK_CONTENT, new WritableBookContent(pages));
         lectern.setBook(book);
+    }
+
+    @LuaFunction(mainThread = true)
+    public final void delPage(int page) throws LuaException {
+        if (page < 1) throw new LuaException("page must be >= 1");
+        ItemStack book = lectern.getBook();
+        if (book.isEmpty()) return;
+        if (!book.is(Items.WRITABLE_BOOK)) return;
+        WritableBookContent c = book.get(DataComponents.WRITABLE_BOOK_CONTENT);
+        if (c == null) return;
+        List<Filterable<String>> pages = new ArrayList<>(c.pages());
+        int idx = page - 1;
+        if (idx >= pages.size()) return;
+        pages.remove(idx);
+        if (pages.isEmpty()) pages.add(Filterable.passThrough(""));
+        book.set(DataComponents.WRITABLE_BOOK_CONTENT, new WritableBookContent(pages));
+        lectern.setBook(book);
+        if (currentPage >= pages.size()) currentPage = Math.max(0, pages.size() - 1);
     }
 
     @LuaFunction(mainThread = true)
@@ -130,35 +138,9 @@ public class LecternDisplayPeripheral implements IPeripheral {
         currentPage = 0;
     }
 
-    private String validateLength(String text) throws LuaException {
+    private static String validateLength(String text) throws LuaException {
         if (text != null && text.length() > MAX_TEXT_LENGTH)
             throw new LuaException("text too long (max " + MAX_TEXT_LENGTH + " chars)");
         return text == null ? "" : text;
-    }
-
-    private String decodeEscapeSequences(String text) {
-        if (text == null || text.isEmpty()) return text;
-        StringBuilder result = new StringBuilder();
-        int i = 0;
-        while (i < text.length()) {
-            if (text.charAt(i) == '\\' && i + 5 < text.length() && text.charAt(i + 1) == 'u') {
-                String hex = text.substring(i + 2, i + 6);
-                try { result.append((char) Integer.parseInt(hex, 16)); i += 6; continue; }
-                catch (NumberFormatException ignored) {}
-            }
-            result.append(text.charAt(i));
-            i++;
-        }
-        return result.toString();
-    }
-
-    private static String encodeNonAscii(String text) {
-        if (text == null || text.isEmpty()) return text;
-        StringBuilder sb = new StringBuilder();
-        for (char c : text.toCharArray()) {
-            if (c > 127) sb.append(String.format("\\u%04x", (int) c));
-            else sb.append(c);
-        }
-        return sb.toString();
     }
 }

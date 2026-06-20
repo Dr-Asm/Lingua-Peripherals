@@ -14,6 +14,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
+import com.linguaperipherals.mod.util.TextUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -67,7 +68,7 @@ public class NarratorPeripheral implements IPeripheral {
         double maxRange = LinguaPeripheralsConfig.GLOBAL_MAX_RANGE.get();
         if (r > maxRange) r = maxRange;
 
-        String decodedText = decodeEscapeSequences(text);
+        String decodedText = TextUtils.decodeEscapeSequences(text);
 
         if (blockEntity.getWorld() == null || blockEntity.getWorld().isClientSide) return false;
 
@@ -106,24 +107,5 @@ public class NarratorPeripheral implements IPeripheral {
         return player.distanceToSqr(sourcePos) <= rad * rad;
     }
 
-    protected String decodeEscapeSequences(String text) {
-        if (text == null || text.isEmpty()) return text;
-        StringBuilder result = new StringBuilder();
-        int i = 0;
-        while (i < text.length()) {
-            if (text.charAt(i) == '\\' && i + 5 < text.length() && text.charAt(i + 1) == 'u') {
-                String hex = text.substring(i + 2, i + 6);
-                try {
-                    int codePoint = Integer.parseInt(hex, 16);
-                    result.append((char) codePoint);
-                    i += 6;
-                    continue;
-                } catch (NumberFormatException ignored) {
-                }
-            }
-            result.append(text.charAt(i));
-            i++;
-        }
-        return result.toString();
-    }
+
 }

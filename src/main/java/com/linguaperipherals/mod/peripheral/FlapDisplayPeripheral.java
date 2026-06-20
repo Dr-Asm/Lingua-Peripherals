@@ -11,6 +11,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
+import com.linguaperipherals.mod.util.TextUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -76,7 +77,7 @@ public class FlapDisplayPeripheral implements IPeripheral {
                 Component comp = sec.getText();
                 if (comp != null) sb.append(comp.getString());
             }
-            result.add(encodeNonAscii(sb.toString()));
+            result.add(TextUtils.encodeNonAscii(sb.toString()));
         }
         return result;
     }
@@ -94,7 +95,7 @@ public class FlapDisplayPeripheral implements IPeripheral {
             Component comp = sec.getText();
             if (comp != null) sb.append(comp.getString());
         }
-        return encodeNonAscii(sb.toString());
+        return TextUtils.encodeNonAscii(sb.toString());
     }
 
     // ==================== Cursor ====================
@@ -115,7 +116,7 @@ public class FlapDisplayPeripheral implements IPeripheral {
 
     @LuaFunction(mainThread = true)
     public final void write(String text) throws LuaException {
-        String decoded = validateLength(decodeEscapeSequences(text));
+        String decoded = validateLength(TextUtils.decodeEscapeSequences(text));
         FlapDisplayBlockEntity ctrl = getController();
         if (ctrl == null) return;
         List<FlapDisplayLayout> lines = ctrl.getLines();
@@ -138,7 +139,7 @@ public class FlapDisplayPeripheral implements IPeripheral {
 
     @LuaFunction(mainThread = true)
     public final void writeLine(int line, String text) throws LuaException {
-        String decoded = validateLength(decodeEscapeSequences(text));
+        String decoded = validateLength(TextUtils.decodeEscapeSequences(text));
         FlapDisplayBlockEntity ctrl = getController();
         if (ctrl == null) return;
         int index = line - 1;
@@ -204,29 +205,5 @@ public class FlapDisplayPeripheral implements IPeripheral {
         return text == null ? "" : text;
     }
 
-    private String decodeEscapeSequences(String text) {
-        if (text == null || text.isEmpty()) return text;
-        StringBuilder result = new StringBuilder();
-        int i = 0;
-        while (i < text.length()) {
-            if (text.charAt(i) == '\\' && i + 5 < text.length() && text.charAt(i + 1) == 'u') {
-                String hex = text.substring(i + 2, i + 6);
-                try { result.append((char) Integer.parseInt(hex, 16)); i += 6; continue; }
-                catch (NumberFormatException ignored) {}
-            }
-            result.append(text.charAt(i));
-            i++;
-        }
-        return result.toString();
-    }
 
-    private static String encodeNonAscii(String text) {
-        if (text == null || text.isEmpty()) return text;
-        StringBuilder sb = new StringBuilder();
-        for (char c : text.toCharArray()) {
-            if (c > 127) sb.append(String.format("\\u%04x", (int) c));
-            else sb.append(c);
-        }
-        return sb.toString();
-    }
 }
