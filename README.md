@@ -15,9 +15,19 @@ An addon mod for [CC: Tweaked](https://github.com/cc-tweaked/CC-Tweaked) that ad
 | [Narrator](doc/narrator.md) | Text-to-speech block using Minecraft's Narrator system |
 | [Creative Narrator](doc/creative_narrator.md) | Indestructible version with global broadcast |
 
+## Display Peripherals
+
+Place a computer adjacent to these existing blocks to use them as peripherals.
+
+| Peripheral | Block | Description |
+|-----------|-------|-------------|
+| [Flap Display](doc/flap_display.md) `flap_display` | Create Flap Display | Control multi-panel text displays (requires [Create](https://github.com/Creators-of-Create/Create)) |
+| [Sign Display](doc/sign_display.md) `sign_display` | Vanilla Sign | Read and write sign text |
+| [Lectern Display](doc/lectern_display.md) `lectern_display` | Vanilla Lectern | Page-based book control (requires Book and Quill) |
+
 ## Chinese Text Support
 
-Use Unicode escape sequences for Chinese TTS. Online converter: [unicode-converter.soe-hentai.win](https://unicode-converter.soe-hentai.win/)
+Use Unicode escape sequences for Chinese text input. Online converter: [unicode-converter.soe-hentai.win](https://unicode-converter.soe-hentai.win/)
 
 ## Development
 

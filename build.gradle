@@ -30,13 +30,16 @@ neoForge {
 }
 
 repositories {
-    flatDir {
-        dirs 'libs'
-    }
+    flatDir { dirs 'libs' }
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    // Mandatory: CC:Tweaked
+    implementation fileTree(dir: 'libs', include: ['cc-tweaked-*.jar'])
+    // Compile-only: Create + its transitive deps (Registrate, Ponder)
+    compileOnly fileTree(dir: 'libs', include: ['create-*.jar', 'Registrate-*.jar', 'ponder-*.jar'])
+    // Other runClient mods (JEI, Jade, etc.)
+    runtimeOnly fileTree(dir: 'libs', exclude: ['cc-tweaked-*.jar', 'create-*.jar', 'Registrate-*.jar', 'ponder-*.jar'])
 }
 
 tasks.named('jar', Jar).configure {

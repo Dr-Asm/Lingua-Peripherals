@@ -1,4 +1,4 @@
-# Lingua Peripherals — 语言外设
+# Lingua Peripherals —— 语言外设
 
 > [English](README.md) | [中文](README_CN.md)
 
@@ -15,9 +15,19 @@
 | [讲述者 (Narrator)](doc_cn/narrator.md) | 使用 Minecraft Narrator 的文本转语音方块 |
 | [创造讲述者 (Creative Narrator)](doc_cn/creative_narrator.md) | 无法破坏的版本，含全局广播功能 |
 
-## 中文语音支持
+## 显示外设
 
-使用 Unicode 转义序列播报中文。在线转换工具：[unicode-converter.soe-hentai.win](https://unicode-converter.soe-hentai.win/)
+将电脑紧邻以下已有方块放置即可作为外设使用。
+
+| 外设 | 对应方块 | 说明 |
+|------|---------|------|
+| [翻牌显示器](doc_cn/flap_display.md) `flap_display` | Create 翻牌显示器 | 控制多面板文字显示屏（需安装[Create](https://github.com/Creators-of-Create/Create)） |
+| [告示牌](doc_cn/sign_display.md) `sign_display` | 原版告示牌 | 读写告示牌文本 |
+| [讲台](doc_cn/lectern_display.md) `lectern_display` | 原版讲台 | 按页控制书本内容（需书与笔） |
+
+## 中文支持
+
+使用 Unicode 转义序列输入中文。在线转换工具：[unicode-converter.soe-hentai.win](https://unicode-converter.soe-hentai.win/)
 
 ## 开发
 

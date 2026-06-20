@@ -4,10 +4,12 @@ import com.linguaperipherals.mod.init.ModBlocks;
 import com.linguaperipherals.mod.init.ModBlockEntities;
 import com.linguaperipherals.mod.init.ModCreativeTabs;
 import com.linguaperipherals.mod.init.PeripheralRegistration;
+import com.linguaperipherals.mod.init.VanillaDisplayPeripherals;
 import com.linguaperipherals.mod.network.LinguaPeripheralsNetwork;
 import com.linguaperipherals.mod.config.LinguaPeripheralsConfig;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import org.slf4j.Logger;
@@ -28,5 +30,19 @@ public class LinguaPeripherals {
 
         PeripheralRegistration.register(modEventBus);
         LinguaPeripheralsNetwork.register(modEventBus);
+
+        // Vanilla display peripherals (sign, lectern) - always available
+        VanillaDisplayPeripherals.register(modEventBus);
+
+        // Create display peripheral (flap display) - only when Create is installed
+        if (ModList.get().isLoaded("create")) {
+            try {
+                Class.forName("com.linguaperipherals.mod.init.CreatePeripheralsSetup")
+                    .getMethod("register", IEventBus.class)
+                    .invoke(null, modEventBus);
+            } catch (ReflectiveOperationException e) {
+                LOGGER.error("Failed to register Create display peripherals", e);
+            }
+        }
     }
 }
