@@ -42,6 +42,10 @@ l.writePage(1, "=== Server Log ===\\nDate: 2026-06-19\\nStatus: Online")
 ### clearPage(page)
 清空指定页。
 
+### delPage(page)
+
+删除指定页。后续页面自动前移。若删除最后一页，页数减少但保留至少一个空白页。
+
 ### clear()
 清空所有页（重置为空白第一页）。
 

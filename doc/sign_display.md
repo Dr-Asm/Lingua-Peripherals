@@ -19,7 +19,7 @@ Returns line text (1-4). Non-ASCII characters are encoded as `\uXXXX`.
 
 ### writeLine(line, text)
 Sets a specific line (1-4). Supports `\uXXXX` Unicode escapes.
-- Max 100 chars per write
+- Max 100 chars per write; excess will be truncated
 
 ### clearLine(line) / clear()
 Clears a line or all lines.

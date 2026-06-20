@@ -29,6 +29,10 @@ Writes text to a specific page (replaces existing content). Use `\n` for line br
 ### clearPage(page)
 Clears a specific page.
 
+### delPage(page)
+
+Deletes the specified page. Subsequent pages shift forward. If the deleted page was the last, the page count decreases. The final page is never fully empty (a blank page is kept).
+
 ### clear()
 Resets to a single blank page.
 

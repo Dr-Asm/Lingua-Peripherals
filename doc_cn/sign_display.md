@@ -19,7 +19,7 @@
 
 ### writeLine(line, text)
 直接设置第 `line` 行（1-4）。支持 `\uXXXX` Unicode 转义。
-- 文本上限 100 字符
+- 文本上限 100 字符，超出部分自动截断
 
 ### clearLine(line)
 清空第 `line` 行。
