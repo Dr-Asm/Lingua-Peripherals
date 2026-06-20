@@ -1,3 +1,7 @@
 {
-  "values": [ "linguaperipherals:narrator" ]
+  "replace": false,
+  "values": [
+    "linguaperipherals:narrator",
+    "linguaperipherals:cassette_drive"
+  ]
 }

@@ -1,5 +1,7 @@
 {
   "block.linguaperipherals.narrator": "讲述者",
   "block.linguaperipherals.creative_narrator": "创造讲述者",
+  "block.linguaperipherals.cassette_drive": "磁带机",
+  "item.linguaperipherals.cassette_tape": "磁带",
   "itemGroup.linguaperipherals": "语言外设"
 }

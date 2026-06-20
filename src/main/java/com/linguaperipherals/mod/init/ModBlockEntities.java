@@ -3,6 +3,7 @@ package com.linguaperipherals.mod.init;
 import com.linguaperipherals.mod.LinguaPeripherals;
 import com.linguaperipherals.mod.block.entity.NarratorBlockEntity;
 import com.linguaperipherals.mod.block.entity.CreativeNarratorBlockEntity;
+import com.linguaperipherals.mod.block.entity.CassetteDriveBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -18,4 +19,8 @@ public class ModBlockEntities {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CreativeNarratorBlockEntity>> CREATIVE_NARRATOR_BE =
             BLOCK_ENTITIES.register("creative_narrator",
                     () -> BlockEntityType.Builder.of(CreativeNarratorBlockEntity::new, ModBlocks.CREATIVE_NARRATOR.get()).build(null));
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CassetteDriveBlockEntity>> CASSETTE_DRIVE_BE =
+            BLOCK_ENTITIES.register("cassette_drive",
+                    () -> BlockEntityType.Builder.of(CassetteDriveBlockEntity::new, ModBlocks.CASSETTE_DRIVE.get()).build(null));
 }

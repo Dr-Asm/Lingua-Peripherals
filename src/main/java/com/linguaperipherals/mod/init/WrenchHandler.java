@@ -3,6 +3,7 @@ package com.linguaperipherals.mod.init;
 import com.linguaperipherals.mod.LinguaPeripherals;
 import com.linguaperipherals.mod.block.NarratorBlock;
 import com.linguaperipherals.mod.block.CreativeNarratorBlock;
+import com.linguaperipherals.mod.block.CassetteDriveBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -29,7 +30,9 @@ public class WrenchHandler {
         Block block = state.getBlock();
         Player player = event.getEntity();
 
-        if (!(block instanceof NarratorBlock) && !(block instanceof CreativeNarratorBlock)) return;
+        if (!(block instanceof NarratorBlock)
+                && !(block instanceof CreativeNarratorBlock)
+                && !(block instanceof CassetteDriveBlock)) return;
         if (block instanceof CreativeNarratorBlock && !player.isCreative()) return;
 
         ItemStack stack = event.getItemStack();
@@ -39,6 +42,7 @@ public class WrenchHandler {
             if (level.isClientSide) return;
 
             if (player.isShiftKeyDown()) {
+                if (block instanceof CreativeNarratorBlock) return;
                 ItemStack blockItem = new ItemStack(state.getBlock().asItem());
                 if (!player.addItem(blockItem)) {
                     Block.popResource(level, player.blockPosition(), blockItem);
@@ -46,9 +50,9 @@ public class WrenchHandler {
                 level.destroyBlock(pos, false);
                 level.playSound(null, pos, SoundEvents.ITEM_PICKUP, SoundSource.BLOCKS, 1.0f, 1.0f);
             } else {
-                Direction currentFacing = state.getValue(NarratorBlock.FACING);
+                Direction currentFacing = state.getValue(CassetteDriveBlock.FACING);
                 Direction newFacing = currentFacing.getClockWise();
-                level.setBlock(pos, state.setValue(NarratorBlock.FACING, newFacing), 3);
+                level.setBlock(pos, state.setValue(CassetteDriveBlock.FACING, newFacing), 3);
                 level.playSound(null, pos, SoundEvents.NOTE_BLOCK_PLING.value(), SoundSource.BLOCKS, 1.0f, 1.0f);
             }
         }

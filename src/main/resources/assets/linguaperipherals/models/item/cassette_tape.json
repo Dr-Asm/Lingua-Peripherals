@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "linguaperipherals:item/cassette_tape_frame",
+    "layer1": "linguaperipherals:item/cassette_tape_color"
+  }
+}

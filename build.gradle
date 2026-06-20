@@ -3,7 +3,7 @@ plugins {
     id 'net.neoforged.moddev' version '2.0.76'
 }
 
-version = '1.0.1'
+version = '1.2.0'
 group = 'com.linguaperipherals'
 
 base {
@@ -36,9 +36,9 @@ repositories {
 dependencies {
     // Mandatory: CC:Tweaked
     implementation fileTree(dir: 'libs', include: ['cc-tweaked-*.jar'])
-    // Compile-only: Create + its transitive deps (Registrate, Ponder)
-    compileOnly fileTree(dir: 'libs', include: ['create-*.jar', 'Registrate-*.jar', 'ponder-*.jar'])
-    // Other runClient mods (JEI, Jade, etc.)
+    // Compile-only: Create + its transitive deps + JEI (for subtype plugin)
+    compileOnly fileTree(dir: 'libs', include: ['create-*.jar', 'Registrate-*.jar', 'ponder-*.jar', 'jei-*.jar'])
+    // Other runClient mods
     runtimeOnly fileTree(dir: 'libs', exclude: ['cc-tweaked-*.jar', 'create-*.jar', 'Registrate-*.jar', 'ponder-*.jar'])
 }
 

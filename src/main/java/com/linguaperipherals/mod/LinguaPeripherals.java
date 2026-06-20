@@ -1,12 +1,14 @@
 package com.linguaperipherals.mod;
 
-import com.linguaperipherals.mod.init.ModBlocks;
+import com.linguaperipherals.mod.config.LinguaPeripheralsConfig;
 import com.linguaperipherals.mod.init.ModBlockEntities;
+import com.linguaperipherals.mod.init.ModBlocks;
 import com.linguaperipherals.mod.init.ModCreativeTabs;
+import com.linguaperipherals.mod.init.ModMenuTypes;
+import com.linguaperipherals.mod.init.ModRecipeSerializers;
 import com.linguaperipherals.mod.init.PeripheralRegistration;
 import com.linguaperipherals.mod.init.VanillaDisplayPeripherals;
 import com.linguaperipherals.mod.network.LinguaPeripheralsNetwork;
-import com.linguaperipherals.mod.config.LinguaPeripheralsConfig;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.ModList;
@@ -25,16 +27,16 @@ public class LinguaPeripherals {
         ModBlocks.ITEMS.register(modEventBus);
         ModBlockEntities.BLOCK_ENTITIES.register(modEventBus);
         ModCreativeTabs.TABS.register(modEventBus);
+        ModMenuTypes.MENU_TYPES.register(modEventBus);
+        ModRecipeSerializers.RECIPE_SERIALIZERS.register(modEventBus);
 
         modContainer.registerConfig(ModConfig.Type.COMMON, LinguaPeripheralsConfig.SPEC, "lingua_peripherals.conf");
 
         PeripheralRegistration.register(modEventBus);
         LinguaPeripheralsNetwork.register(modEventBus);
 
-        // Vanilla display peripherals (sign, lectern) - always available
         VanillaDisplayPeripherals.register(modEventBus);
 
-        // Create display peripheral (flap display) - only when Create is installed
         if (ModList.get().isLoaded("create")) {
             try {
                 Class.forName("com.linguaperipherals.mod.init.CreatePeripheralsSetup")

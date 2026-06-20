@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "minecraft:redstone"
+    },
+    {
+      "item": "minecraft:iron_nugget"
+    },
+    {
+      "item": "minecraft:dried_kelp"
+    },
+    {
+      "item": "minecraft:cyan_dye"
+    }
+  ],
+  "result": {
+    "id": "linguaperipherals:cassette_tape",
+    "count": 1,
+    "components": {
+      "minecraft:dyed_color": {
+        "rgb": 2651799,
+        "show_in_tooltip": false
+      }
+    }
+  }
+}

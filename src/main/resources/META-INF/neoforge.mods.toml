@@ -4,7 +4,7 @@ license = "CC-BY-NC-SA-4.0"
 
 [[mods]]
 modId = "linguaperipherals"
-version = "1.0.1"
+version = "1.2.0"
 displayName = "Lingua Peripherals"
 displayURL = "https://github.com/DrAsm/linguaperipherals"
 credits = "Dr_Asm"

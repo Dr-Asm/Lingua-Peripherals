@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/orientable_with_bottom",
+  "textures": {
+    "top": "linguaperipherals:block/cassette_drive_top",
+    "bottom": "linguaperipherals:block/cassette_drive_bottom",
+    "side": "linguaperipherals:block/cassette_drive_side",
+    "front": "linguaperipherals:block/cassette_drive_front_accepted"
+  }
+}
