@@ -2,50 +2,29 @@
 
 > ⚠ Requires [Create](https://github.com/Creators-of-Create/Create) mod.
 
-Place a CC: Tweaked computer adjacent to any Flap Display panel. The computer will detect the peripheral and control the entire multi-panel display.
+Place a CC: Tweaked computer adjacent to any Flap Display panel to control the entire multi-panel display.
 
 - **Peripheral type:** `flap_display`
 - **Requirement:** Only available when Create mod is installed
-- **Placement:** Computer adjacent to any flap display panel (controller auto-detected)
+- **Text limit:** 500 chars per write call
+- **Read encoding:** Non-ASCII characters returned as `\uXXXX` escapes
 
 ## Peripheral Methods
 
-### getSize()
-Returns `(maxCols, maxRows)` — bounding rectangle dimensions.
+### getSize(), isRunning(), getText(), getLine()
+See [Chinese docs](doc_cn/flap_display.md) or use `peripheral.find` in-game.
 
-```lua
-local cols, rows = f.getSize()
-print("Size:", cols, "columns x", rows, "rows")
-```
-
-### isRunning()
-Returns whether the flap display has sufficient kinetic power for animation.
-
-### getText()
-Returns all lines as a table of strings.
-
-### getLine(line)
-Returns the text of the specified line (1-indexed).
-
-### write(text)
-Writes text at the current cursor position. Supports `\\uXXXX` Unicode escapes for CJK text.
-
-### writeLine(line, text) / setLine(line, text)
-Directly sets the complete text of a specific line.
+### write(text), writeLine(line, text), setLine(line, text)
+Write text. Supports `\uXXXX` Unicode escapes.
 
 ### setCursorPos(col, row) / getCursorPos()
-Cursor position control (1-indexed).
+Cursor control (1-indexed).
 
-### clearLine(line)
-Clears a specific line.
-
-### clear()
-Clears all lines.
+### clearLine(line) / clear()
+Clear one or all lines.
 
 ### setColor(line, color)
-Sets the text color for a line. Available colors:
-`white`, `orange`, `magenta`, `light_blue`, `yellow`, `lime`, `pink`, `gray`,
-`light_gray`, `cyan`, `purple`, `blue`, `brown`, `green`, `red`, `black`
+16 dye colors supported.
 
 ## Example
 
@@ -53,6 +32,6 @@ Sets the text color for a line. Available colors:
 local f = peripheral.find("flap_display")
 f.clear()
 f.setColor(1, "green")
-f.setLine(1, "SERVER STATUS")
-f.setLine(2, "All systems nominal")
+f.writeLine(1, "SERVER STATUS")
+f.writeLine(2, "All systems nominal")
 ```

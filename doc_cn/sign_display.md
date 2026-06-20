@@ -11,20 +11,15 @@
 ### getSize()
 返回 `(15, 4)` — 固定尺寸。
 
-### getText()
-返回 4 行文本（table of strings）。
+### readText()
+返回 4 行文本（table of strings）。非 ASCII 字符自动转为 `\uXXXX` 转义格式。
 
-### getLine(line)
-返回第 `line` 行文本（1-4）。
+### readLine(line)
+返回第 `line` 行文本（1-4）。非 ASCII 字符自动转为 `\uXXXX` 转义格式。
 
-### write(text)
-在当前光标位置写入文本。支持 `\\uXXXX` Unicode 转义。
-
-### writeLine(line, text) / setLine(line, text)
-直接设置第 `line` 行（1-4）。
-
-### setCursorPos(col, row) / getCursorPos()
-设置/获取光标位置。
+### writeLine(line, text)
+直接设置第 `line` 行（1-4）。支持 `\uXXXX` Unicode 转义。
+- 文本上限 100 字符
 
 ### clearLine(line)
 清空第 `line` 行。
@@ -37,8 +32,8 @@
 ```lua
 local s = peripheral.find("sign_display")
 s.clear()
-s.setLine(1, "Shop")
-s.setLine(2, "Buy: 1 Diamond")
-s.setLine(3, "Sell: 64 Stone")
-s.setLine(4, "Open 24/7")
+s.writeLine(1, "Shop")
+s.writeLine(2, "Buy: 1 Diamond")
+s.writeLine(3, "\\u51fa\\u552e: 64 \\u77f3\\u5934")  -- "出售: 64 石头"
+s.writeLine(4, "Open 24/7")
 ```

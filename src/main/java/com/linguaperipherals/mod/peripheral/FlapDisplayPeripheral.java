@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class FlapDisplayPeripheral implements IPeripheral {
+    private static final int MAX_TEXT_LENGTH = 500;
     private static final Set<String> VALID_COLORS = Set.of(
         "white", "orange", "magenta", "light_blue", "yellow", "lime",
         "pink", "gray", "light_gray", "cyan", "purple", "blue",
@@ -36,11 +37,8 @@ public class FlapDisplayPeripheral implements IPeripheral {
     @Override
     public String getType() { return "flap_display"; }
 
-    @Override
-    public void attach(IComputerAccess computer) { attachedComputers.add(computer); }
-
-    @Override
-    public void detach(IComputerAccess computer) { attachedComputers.remove(computer); }
+    @Override public void attach(IComputerAccess computer) { attachedComputers.add(computer); }
+    @Override public void detach(IComputerAccess computer) { attachedComputers.remove(computer); }
 
     @Override
     public boolean equals(@Nullable IPeripheral other) {
@@ -48,6 +46,8 @@ public class FlapDisplayPeripheral implements IPeripheral {
         if (!(other instanceof FlapDisplayPeripheral that)) return false;
         return blockEntity.getBlockPos().equals(that.blockEntity.getBlockPos());
     }
+
+    // ==================== Info ====================
 
     @LuaFunction(mainThread = true)
     public final Object[] getSize() {
@@ -62,6 +62,8 @@ public class FlapDisplayPeripheral implements IPeripheral {
         return ctrl != null && ctrl.isSpeedRequirementFulfilled();
     }
 
+    // ==================== Read (encoded for CC) ====================
+
     @LuaFunction(mainThread = true)
     public final List<String> getText() {
         FlapDisplayBlockEntity ctrl = getController();
@@ -74,7 +76,7 @@ public class FlapDisplayPeripheral implements IPeripheral {
                 Component comp = sec.getText();
                 if (comp != null) sb.append(comp.getString());
             }
-            result.add(sb.toString());
+            result.add(encodeNonAscii(sb.toString()));
         }
         return result;
     }
@@ -92,8 +94,10 @@ public class FlapDisplayPeripheral implements IPeripheral {
             Component comp = sec.getText();
             if (comp != null) sb.append(comp.getString());
         }
-        return sb.toString();
+        return encodeNonAscii(sb.toString());
     }
+
+    // ==================== Cursor ====================
 
     @LuaFunction
     public final void setCursorPos(int col, int row) throws LuaException {
@@ -107,9 +111,11 @@ public class FlapDisplayPeripheral implements IPeripheral {
         return new Object[]{cursorX + 1, cursorY + 1};
     }
 
+    // ==================== Write ====================
+
     @LuaFunction(mainThread = true)
-    public final void write(String text) {
-        String decoded = decodeEscapeSequences(text);
+    public final void write(String text) throws LuaException {
+        String decoded = validateLength(decodeEscapeSequences(text));
         FlapDisplayBlockEntity ctrl = getController();
         if (ctrl == null) return;
         List<FlapDisplayLayout> lines = ctrl.getLines();
@@ -132,7 +138,7 @@ public class FlapDisplayPeripheral implements IPeripheral {
 
     @LuaFunction(mainThread = true)
     public final void writeLine(int line, String text) throws LuaException {
-        String decoded = decodeEscapeSequences(text);
+        String decoded = validateLength(decodeEscapeSequences(text));
         FlapDisplayBlockEntity ctrl = getController();
         if (ctrl == null) return;
         int index = line - 1;
@@ -184,10 +190,18 @@ public class FlapDisplayPeripheral implements IPeripheral {
         ctrl.sendData();
     }
 
+    // ==================== Helpers ====================
+
     private FlapDisplayBlockEntity getController() {
         Level level = blockEntity.getLevel();
         if (level == null || level.isClientSide) return null;
         return blockEntity.getController();
+    }
+
+    private String validateLength(String text) throws LuaException {
+        if (text != null && text.length() > MAX_TEXT_LENGTH)
+            throw new LuaException("text too long (max " + MAX_TEXT_LENGTH + " chars)");
+        return text == null ? "" : text;
     }
 
     private String decodeEscapeSequences(String text) {
@@ -197,16 +211,22 @@ public class FlapDisplayPeripheral implements IPeripheral {
         while (i < text.length()) {
             if (text.charAt(i) == '\\' && i + 5 < text.length() && text.charAt(i + 1) == 'u') {
                 String hex = text.substring(i + 2, i + 6);
-                try {
-                    int codePoint = Integer.parseInt(hex, 16);
-                    result.append((char) codePoint);
-                    i += 6;
-                    continue;
-                } catch (NumberFormatException ignored) { }
+                try { result.append((char) Integer.parseInt(hex, 16)); i += 6; continue; }
+                catch (NumberFormatException ignored) {}
             }
             result.append(text.charAt(i));
             i++;
         }
         return result.toString();
+    }
+
+    private static String encodeNonAscii(String text) {
+        if (text == null || text.isEmpty()) return text;
+        StringBuilder sb = new StringBuilder();
+        for (char c : text.toCharArray()) {
+            if (c > 127) sb.append(String.format("\\u%04x", (int) c));
+            else sb.append(c);
+        }
+        return sb.toString();
     }
 }

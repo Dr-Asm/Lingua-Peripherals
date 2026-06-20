@@ -14,10 +14,10 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class SignDisplayPeripheral implements IPeripheral {
+    private static final int MAX_TEXT_LENGTH = 100;
+
     private final SignBlockEntity sign;
     private final List<IComputerAccess> attachedComputers = new CopyOnWriteArrayList<>();
-    private int cursorX = 0;
-    private int cursorY = 0;
 
     public SignDisplayPeripheral(SignBlockEntity sign) {
         this.sign = sign;
@@ -37,63 +37,37 @@ public class SignDisplayPeripheral implements IPeripheral {
     }
 
     @LuaFunction(mainThread = true)
-    public final Object[] getSize() { return new Object[]{15, 4}; }
+    public final Object[] getSize() {
+        return new Object[]{15, 4};
+    }
 
     @LuaFunction(mainThread = true)
-    public final List<String> getText() {
+    public final List<String> readText() {
         SignText text = sign.getText(true);
         List<String> result = new ArrayList<>();
         for (int i = 0; i < 4; i++) {
             Component msg = text.getMessage(i, true);
-            result.add(msg != null ? msg.getString() : "");
+            result.add(msg != null ? encodeNonAscii(msg.getString()) : "");
         }
         return result;
     }
 
     @LuaFunction(mainThread = true)
-    public final String getLine(int line) throws LuaException {
+    public final String readLine(int line) throws LuaException {
         if (line < 1 || line > 4) throw new LuaException("line out of range (1..4)");
         Component msg = sign.getText(true).getMessage(line - 1, true);
-        return msg != null ? msg.getString() : "";
-    }
-
-    @LuaFunction
-    public final void setCursorPos(int col, int row) throws LuaException {
-        if (col < 1 || row < 1) throw new LuaException("cursor must be >= 1");
-        cursorX = col - 1; cursorY = row - 1;
-    }
-
-    @LuaFunction
-    public final Object[] getCursorPos() { return new Object[]{cursorX + 1, cursorY + 1}; }
-
-    @LuaFunction(mainThread = true)
-    public final void write(String text) {
-        String decoded = decodeEscapeSequences(text);
-        if (cursorY < 0 || cursorY >= 4) return;
-        SignText cur = sign.getText(true);
-        String curStr = cur.getMessage(cursorY, true).getString();
-        while (curStr.length() < cursorX) curStr += " ";
-        int end = cursorX + decoded.length();
-        String pre = curStr.substring(0, Math.min(cursorX, curStr.length()));
-        String suf = curStr.length() > end ? curStr.substring(end) : "";
-        sign.setText(cur.setMessage(cursorY, Component.literal(pre + decoded + suf)), true);
-        sign.setChanged();
-        sign.getLevel().sendBlockUpdated(sign.getBlockPos(), sign.getBlockState(), sign.getBlockState(), 3);
-        cursorX += decoded.length();
+        return msg != null ? encodeNonAscii(msg.getString()) : "";
     }
 
     @LuaFunction(mainThread = true)
     public final void writeLine(int line, String text) throws LuaException {
-        String decoded = decodeEscapeSequences(text);
         if (line < 1 || line > 4) throw new LuaException("line out of range (1..4)");
+        String decoded = validateLength(decodeEscapeSequences(text));
         SignText cur = sign.getText(true);
         sign.setText(cur.setMessage(line - 1, Component.literal(decoded)), true);
         sign.setChanged();
         sign.getLevel().sendBlockUpdated(sign.getBlockPos(), sign.getBlockState(), sign.getBlockState(), 3);
     }
-
-    @LuaFunction(mainThread = true)
-    public final void setLine(int line, String text) throws LuaException { writeLine(line, text); }
 
     @LuaFunction(mainThread = true)
     public final void clearLine(int line) throws LuaException {
@@ -113,22 +87,34 @@ public class SignDisplayPeripheral implements IPeripheral {
         sign.getLevel().sendBlockUpdated(sign.getBlockPos(), sign.getBlockState(), sign.getBlockState(), 3);
     }
 
-    @LuaFunction(mainThread = true)
-    public final void setColor(int line, String color) throws LuaException {
-        throw new LuaException("signs do not support color");
+    private String validateLength(String text) throws LuaException {
+        if (text != null && text.length() > MAX_TEXT_LENGTH)
+            throw new LuaException("text too long (max " + MAX_TEXT_LENGTH + " chars)");
+        return text == null ? "" : text;
     }
 
-    @SuppressWarnings("unused")
     private String decodeEscapeSequences(String text) {
         if (text == null || text.isEmpty()) return text;
-        StringBuilder sb = new StringBuilder();
+        StringBuilder result = new StringBuilder();
         int i = 0;
         while (i < text.length()) {
             if (text.charAt(i) == '\\' && i + 5 < text.length() && text.charAt(i + 1) == 'u') {
-                try { sb.append((char) Integer.parseInt(text.substring(i + 2, i + 6), 16)); i += 6; continue; }
+                String hex = text.substring(i + 2, i + 6);
+                try { result.append((char) Integer.parseInt(hex, 16)); i += 6; continue; }
                 catch (NumberFormatException ignored) {}
             }
-            sb.append(text.charAt(i)); i++;
+            result.append(text.charAt(i));
+            i++;
+        }
+        return result.toString();
+    }
+
+    private static String encodeNonAscii(String text) {
+        if (text == null || text.isEmpty()) return text;
+        StringBuilder sb = new StringBuilder();
+        for (char c : text.toCharArray()) {
+            if (c > 127) sb.append(String.format("\\u%04x", (int) c));
+            else sb.append(c);
         }
         return sb.toString();
     }

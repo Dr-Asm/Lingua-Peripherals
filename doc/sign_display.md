@@ -11,20 +11,15 @@ Place a CC: Tweaked computer adjacent to a vanilla sign to read and write sign t
 ### getSize()
 Returns `(15, 4)`.
 
-### getText()
-Returns all 4 lines as a table of strings.
+### readText()
+Returns all 4 lines (table of strings). Non-ASCII characters are encoded as `\uXXXX`.
 
-### getLine(line)
-Returns line text (1-4).
+### readLine(line)
+Returns line text (1-4). Non-ASCII characters are encoded as `\uXXXX`.
 
-### write(text)
-Writes at cursor position. Supports `\\uXXXX` Unicode escapes.
-
-### writeLine(line, text) / setLine(line, text)
-Sets a specific line (1-4).
-
-### setCursorPos(col, row) / getCursorPos()
-Cursor control.
+### writeLine(line, text)
+Sets a specific line (1-4). Supports `\uXXXX` Unicode escapes.
+- Max 100 chars per write
 
 ### clearLine(line) / clear()
 Clears a line or all lines.
@@ -34,7 +29,7 @@ Clears a line or all lines.
 ```lua
 local s = peripheral.find("sign_display")
 s.clear()
-s.setLine(1, "Shop")
-s.setLine(2, "Buy: 1 Diamond")
-s.setLine(3, "Sell: 64 Stone")
+s.writeLine(1, "Shop")
+s.writeLine(2, "Buy: 1 Diamond")
+s.writeLine(3, "Sell: 64 Stone")
 ```

@@ -2,54 +2,41 @@
 
 Place a CC: Tweaked computer adjacent to a lectern to read and write book content.
 
-> 💡 The lectern uses **page-based** operations (different from line-based sign/flap display).
-> Use `\\n` within text for line breaks.
+> 💡 The lectern uses **page-based** operations. Use `\n` within text for line breaks.
 
 - **Peripheral type:** `lectern_display`
 - **Requirement:** Always available (vanilla block), requires Book & Quill on the lectern
 - **Write limitation:** Book & Quill only; signed books are read-only
+- **Text limit:** 2000 chars per write call
 
 ## Peripheral Methods
 
-### Page Control
+### getItem()
+Returns the item ID on the lectern (e.g. `"minecraft:writable_book"`, `"minecraft:air"`).
 
-#### getPages()
+### getPages()
 Returns total number of pages.
 
-#### setPage(page)
-Sets the current page (1-indexed).
+### getPage() / setPage(page)
+Get or set the current page (1-indexed). Can set any page number; pages are created on write.
 
-#### getPage()
-Returns current page number.
+### readPage(page)
+Reads a specific page. Non-ASCII characters are encoded as `\uXXXX`.
 
-#### getPageText()
-Returns full text of the current page.
+### writePage(page, text)
+Writes text to a specific page (replaces existing content). Use `\n` for line breaks. Supports `\uXXXX` escapes. Creates intermediate pages if needed.
 
-#### readPage(page)
-Reads a specific page.
+### clearPage(page)
+Clears a specific page.
 
-### Writing
-
-#### write(text)
-Writes text at cursor position on current page. Use `\\n` for line breaks.
-
-#### clearPage()
-Clears current page.
-
-#### clear()
+### clear()
 Resets to a single blank page.
-
-### Cursor
-
-#### setCursorPos(pos) / getCursorPos()
-Cursor position within the page (1-indexed character offset).
 
 ## Example
 
 ```lua
 local l = peripheral.find("lectern_display")
-l.setPage(1)
-l.write("=== Server Log ===\\n")
-l.write("Status: Online\\n")
-l.write("Players: 5/20")
+l.writePage(1, "=== Server Log ===\\nStatus: Online\\nPlayers: 5/20")
+l.writePage(2, "=== Player List ===\\n1. Steve\\n2. Alex")
+print(l.readPage(1))
 ```
