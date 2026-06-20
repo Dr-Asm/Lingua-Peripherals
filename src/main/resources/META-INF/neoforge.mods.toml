@@ -20,13 +20,6 @@ description = "A CC: Tweaked addon that adds language-related peripherals."
     side = "BOTH"
 
 [[dependencies.linguaperipherals]]
-    modId = "create"
-    mandatory = false
-    versionRange = "[6.0,)"
-    ordering = "NONE"
-    side = "BOTH"
-
-[[dependencies.linguaperipherals]]
     modId = "minecraft"
     mandatory = true
     versionRange = "[1.21.1]"
