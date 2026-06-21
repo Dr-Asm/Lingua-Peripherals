@@ -1,5 +1,6 @@
 package com.linguaperipherals.mod.peripheral;
 
+import com.linguaperipherals.mod.LinguaPeripherals;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.file.Files;
@@ -24,7 +25,10 @@ public class CassetteTapeStorage {
     public long sizeLimit() { return sizeLimit; }
 
     public long size() {
-        try { return Files.size(filePath); } catch (IOException e) { return 0; }
+        try { return Files.size(filePath); } catch (IOException e) {
+            LinguaPeripherals.LOGGER.warn("Failed to read tape file size: {}", filePath, e);
+            return 0;
+        }
     }
 
     public synchronized CassetteTapeFileHandle open(String mode) throws IOException {

@@ -90,7 +90,7 @@ public class CassetteDrivePeripheral implements IPeripheral {
     }
 
     @LuaFunction
-    public final CassetteTapeFileHandle open(String mode) throws LuaException {
+    public final CassetteTapeFileHandle open(IComputerAccess computer, String mode) throws LuaException {
         CassetteTapeStorage storage = blockEntity.getTapeStorage();
         if (storage == null) throw new LuaException("No cassette tape in drive");
         if (mode == null || mode.isEmpty())
@@ -98,8 +98,12 @@ public class CassetteDrivePeripheral implements IPeripheral {
         String m = mode.trim();
         if (!m.matches("^[rwa][b+]?[b+]?$"))
             throw new LuaException("unsupported mode '" + mode + "'");
-        try { return storage.open(m); }
-        catch (IOException e) { throw new LuaException("Failed to open tape: " + e.getMessage()); }
+        try {
+            blockEntity.closeHandle(computer);
+            CassetteTapeFileHandle handle = storage.open(m);
+            blockEntity.trackHandle(computer, handle);
+            return handle;
+        } catch (IOException e) { throw new LuaException("Failed to open tape: " + e.getMessage()); }
     }
 
     @LuaFunction

@@ -6,14 +6,11 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.lang.ref.Cleaner;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 @SuppressWarnings("unused")
 public class CassetteTapeFileHandle {
-    private static final Cleaner cleaner = Cleaner.create();
-
     private final CassetteTapeStorage storage;
     private final RandomAccessFile raf;
     private final String mode;
@@ -27,11 +24,6 @@ public class CassetteTapeFileHandle {
         this.mode = mode;
         this.readable = true;
         this.writable = normalizedMode.equals("rw");
-        cleaner.register(this, () -> {
-            closed = true;
-            try { raf.close(); } catch (IOException ignored) {}
-            storage.onHandleClosed();
-        });
     }
 
     @LuaFunction
@@ -93,7 +85,7 @@ public class CassetteTapeFileHandle {
     }
 
     public boolean isClosed() { return closed; }
-    void forceClose() throws IOException { closed = true; raf.close(); }
+    public void forceClose() throws IOException { closed = true; raf.close(); storage.onHandleClosed(); }
 
     private void checkClosed() throws LuaException { if (closed) throw new LuaException("File handle is closed"); }
 
@@ -131,8 +123,8 @@ public class CassetteTapeFileHandle {
         return read > 0 ? new String(buf, 0, read, StandardCharsets.UTF_8) : "";
     }
 
-    @Nullable
     private String readChars(int n) throws IOException {
+        n = Math.min(n, (int) storage.sizeLimit());
         byte[] buf = new byte[n];
         int total = 0;
         while (total < n) { int r = raf.read(buf, total, n - total); if (r == -1) break; total += r; }

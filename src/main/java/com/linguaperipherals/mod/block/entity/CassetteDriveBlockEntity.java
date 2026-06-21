@@ -7,6 +7,7 @@ import com.linguaperipherals.mod.init.ModBlockEntities;
 import com.linguaperipherals.mod.inventory.CassetteDriveMenu;
 import com.linguaperipherals.mod.item.CassetteTapeItem;
 import com.linguaperipherals.mod.peripheral.CassetteDrivePeripheral;
+import com.linguaperipherals.mod.peripheral.CassetteTapeFileHandle;
 import com.linguaperipherals.mod.peripheral.CassetteTapeStorage;
 import dan200.computercraft.api.ComputerCraftAPI;
 import dan200.computercraft.api.peripheral.IComputerAccess;
@@ -34,6 +35,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class CassetteDriveBlockEntity extends BlockEntity implements MenuProvider {
@@ -67,8 +70,8 @@ public class CassetteDriveBlockEntity extends BlockEntity implements MenuProvide
 
     private final CassetteDrivePeripheral peripheral = new CassetteDrivePeripheral(this);
     private @Nullable CassetteTapeStorage tapeStorage;
+    private final Map<IComputerAccess, CassetteTapeFileHandle> computerHandles = new ConcurrentHashMap<>();
     private final AtomicBoolean ejectQueued = new AtomicBoolean(false);
-    private final AtomicBoolean stackDirty = new AtomicBoolean(false);
 
     public CassetteDriveBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.CASSETTE_DRIVE_BE.get(), pos, state);
@@ -78,6 +81,17 @@ public class CassetteDriveBlockEntity extends BlockEntity implements MenuProvide
     public Container getInventory() { return inventory; }
     public ItemStack getStoredItem() { return items.get(0); }
     public @Nullable CassetteTapeStorage getTapeStorage() { return tapeStorage; }
+
+    public void closeHandle(IComputerAccess computer) {
+        CassetteTapeFileHandle old = computerHandles.remove(computer);
+        if (old != null) {
+            try { old.forceClose(); } catch (IOException ignored) {}
+        }
+    }
+
+    public void trackHandle(IComputerAccess computer, CassetteTapeFileHandle handle) {
+        computerHandles.put(computer, handle);
+    }
 
     @Override
     public void clearRemoved() {
@@ -93,7 +107,7 @@ public class CassetteDriveBlockEntity extends BlockEntity implements MenuProvide
     }
 
     public void onComputerDetach(IComputerAccess computer) {
-        closeAllHandles();
+        closeHandle(computer);
     }
 
     public void requestEject() { ejectQueued.set(true); }
@@ -116,7 +130,7 @@ public class CassetteDriveBlockEntity extends BlockEntity implements MenuProvide
                 try {
                     id = ComputerCraftAPI.createUniqueNumberedSaveDir(sl.getServer(), "cassette_tape");
                     CassetteTapeItem.setCassetteID(stack, id);
-                    stackDirty.set(true);
+                    setChanged();
                 } catch (Exception e) {
                     LinguaPeripherals.LOGGER.error("Failed to assign cassette tape ID", e);
                     tapeStorage = null;
@@ -180,12 +194,15 @@ public class CassetteDriveBlockEntity extends BlockEntity implements MenuProvide
     }
 
     private void closeAllHandles() {
+        for (CassetteTapeFileHandle h : computerHandles.values()) {
+            try { h.forceClose(); } catch (IOException ignored) {}
+        }
+        computerHandles.clear();
         if (tapeStorage != null) tapeStorage.forceClose();
     }
 
     public void tick() {
         if (level == null || level.isClientSide) return;
-        if (stackDirty.getAndSet(false)) setChanged();
         if (ejectQueued.getAndSet(false)) doEject();
     }
 
