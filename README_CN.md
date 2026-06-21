@@ -14,13 +14,13 @@
 |------|------|
 | [讲述者 (Narrator)](doc_cn/narrator.md) | 使用 Minecraft Narrator 的文本转语音方块 |
 | [创造讲述者 (Creative Narrator)](doc_cn/creative_narrator.md) | 无法破坏的版本，含全局广播功能 |
-| [磁带机 (Cassette Drive)](doc_cn/cassette_drive.md) | 单槽驱动器，接受磁带和其他物品 |
+| [磁带机 (Cassette Drive)](doc_cn/cassette_drive.md) | 单槽驱动器，支持磁带数据读写 |
 
 ## 物品
 
 | 物品 | 说明 |
 |------|------|
-| [磁带 (Cassette Tape)](doc_cn/cassette_tape.md) | 可染色磁带（16 色），通过染料合成 |
+| [磁带 (Cassette Tape)](doc_cn/cassette_tape.md) | 可染色磁带（16 色），可存储最多 256 KB 数据 |
 
 ## 显示外设
 

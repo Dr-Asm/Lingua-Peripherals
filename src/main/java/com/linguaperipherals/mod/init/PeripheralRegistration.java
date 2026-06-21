@@ -3,6 +3,7 @@ package com.linguaperipherals.mod.init;
 import com.linguaperipherals.mod.LinguaPeripherals;
 import com.linguaperipherals.mod.block.entity.NarratorBlockEntity;
 import com.linguaperipherals.mod.block.entity.CreativeNarratorBlockEntity;
+import com.linguaperipherals.mod.block.entity.CassetteDriveBlockEntity;
 import dan200.computercraft.api.peripheral.PeripheralCapability;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
@@ -22,6 +23,11 @@ public class PeripheralRegistration {
         event.registerBlockEntity(
                 PeripheralCapability.get(),
                 ModBlockEntities.CREATIVE_NARRATOR_BE.get(),
+                (be, dir) -> be.getPeripheral()
+        );
+        event.registerBlockEntity(
+                PeripheralCapability.get(),
+                ModBlockEntities.CASSETTE_DRIVE_BE.get(),
                 (be, dir) -> be.getPeripheral()
         );
     }

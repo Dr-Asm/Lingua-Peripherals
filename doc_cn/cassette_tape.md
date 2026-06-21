@@ -1,16 +1,21 @@
 # 磁带 (Cassette Tape)
 
-可染色的物品，通过染料合成着色。存储的颜色值将用于后续磁带机操作。
+可染色的物品，通过染料合成着色。插入磁带机后可存储数据。
 
-> 即将推出：CC: Tweaked 外设集成，用于磁带操作。
-
-- **物品 ID：** `linguaperipherals:cassette_tape`
+- **物品 ID：** linguaperipherals:cassette_tape
 - **堆叠：** 1（不可堆叠）
 - **16 色：** 每种染料对应一种颜色（白、橙、品红、淡蓝、黄、黄绿、粉、灰、淡灰、青、紫、蓝、棕、绿、红、黑）
 
 ## 颜色系统
 
-磁带颜色存储在 `minecraft:dyed_color` 组件中。物品贴图的彩色条纹会随颜色变化。
+磁带颜色存储在 minecraft:dyed_color 组件中。物品贴图的彩色条纹会随颜色变化。
+
+## 数据存储
+
+- 磁带最多可存储 256 KB 数据（可通过 cassetteTapeSizeLimit 配置）
+- 首次插入磁带机时自动分配唯一数字 ID
+- ID 可在高级提示框（F3+H）中查看
+- 数据持久保存在世界存档目录下的 computercraft/cassette_tape/ 中
 
 ## 合成
 

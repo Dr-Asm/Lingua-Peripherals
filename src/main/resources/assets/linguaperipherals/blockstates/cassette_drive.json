@@ -2,51 +2,51 @@
   "variants": {
     "facing=north,cassette_state=empty": {
       "model": "linguaperipherals:block/cassette_drive",
-      "y": 180
+      "y": 0
     },
     "facing=north,cassette_state=accepted": {
       "model": "linguaperipherals:block/cassette_drive_accepted",
-      "y": 180
+      "y": 0
     },
     "facing=north,cassette_state=rejected": {
       "model": "linguaperipherals:block/cassette_drive_rejected",
-      "y": 180
+      "y": 0
     },
     "facing=south,cassette_state=empty": {
       "model": "linguaperipherals:block/cassette_drive",
-      "y": 0
+      "y": 180
     },
     "facing=south,cassette_state=accepted": {
       "model": "linguaperipherals:block/cassette_drive_accepted",
-      "y": 0
+      "y": 180
     },
     "facing=south,cassette_state=rejected": {
       "model": "linguaperipherals:block/cassette_drive_rejected",
-      "y": 0
+      "y": 180
     },
     "facing=west,cassette_state=empty": {
       "model": "linguaperipherals:block/cassette_drive",
-      "y": 90
+      "y": 270
     },
     "facing=west,cassette_state=accepted": {
       "model": "linguaperipherals:block/cassette_drive_accepted",
-      "y": 90
+      "y": 270
     },
     "facing=west,cassette_state=rejected": {
       "model": "linguaperipherals:block/cassette_drive_rejected",
-      "y": 90
+      "y": 270
     },
     "facing=east,cassette_state=empty": {
       "model": "linguaperipherals:block/cassette_drive",
-      "y": 270
+      "y": 90
     },
     "facing=east,cassette_state=accepted": {
       "model": "linguaperipherals:block/cassette_drive_accepted",
-      "y": 270
+      "y": 90
     },
     "facing=east,cassette_state=rejected": {
       "model": "linguaperipherals:block/cassette_drive_rejected",
-      "y": 270
+      "y": 90
     }
   }
 }

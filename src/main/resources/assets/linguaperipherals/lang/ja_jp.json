@@ -3,5 +3,6 @@
   "block.linguaperipherals.creative_narrator": "クリエイティブの語り部",
   "block.linguaperipherals.cassette_drive": "録音装置",
   "item.linguaperipherals.cassette_tape": "録音帯",
-  "itemGroup.linguaperipherals": "言語ペリフェラル"
+  "itemGroup.linguaperipherals": "言語ペリフェラル",
+  "tooltip.linguaperipherals.cassette_id": "録音帯ID: %s"
 }

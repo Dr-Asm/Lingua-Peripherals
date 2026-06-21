@@ -3,5 +3,6 @@
   "block.linguaperipherals.creative_narrator": "Creative Narrator",
   "block.linguaperipherals.cassette_drive": "Cassette Drive",
   "item.linguaperipherals.cassette_tape": "Cassette Tape",
-  "itemGroup.linguaperipherals": "Lingua Peripherals"
+  "itemGroup.linguaperipherals": "Lingua Peripherals",
+  "tooltip.linguaperipherals.cassette_id": "Cassette ID: %s"
 }
