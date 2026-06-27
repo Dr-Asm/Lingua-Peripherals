@@ -14,13 +14,13 @@ An addon mod for [CC: Tweaked](https://github.com/cc-tweaked/CC-Tweaked) that ad
 |-------|-------------|
 | [Narrator](doc/narrator.md) | Text-to-speech block using Minecraft Narrator system |
 | [Creative Narrator](doc/creative_narrator.md) | Indestructible version with global broadcast |
-| [Cassette Drive](doc/cassette_drive.md) | Single-slot drive accepting cassette tapes with data read/write support |
+| [Cassette Drive](doc/cassette_drive.md) | Single-slot drive with data read/write and DFPWM audio playback |
 
 ## Items
 
 | Item | Description |
 |------|-------------|
-| [Cassette Tape](doc/cassette_tape.md) | Colorable tape item (16 colors), stores up to 256 KB of data |
+| [Cassette Tape](doc/cassette_tape.md) | Colorable tape item (16 colors), stores up to 256 KB of data or DFPWM audio |
 
 ## Display Peripherals
 

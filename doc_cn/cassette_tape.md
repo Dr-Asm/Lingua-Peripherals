@@ -1,6 +1,6 @@
 # 磁带 (Cassette Tape)
 
-可染色的物品，通过染料合成着色。插入磁带机后可存储数据。
+可染色的物品，通过染料合成着色。插入磁带机后可存储数据或播放 DFPWM 编码音频。
 
 - **物品 ID：** `linguaperipherals:cassette_tape`
 - **堆叠：** 1（不可堆叠）
@@ -16,6 +16,29 @@
 - 首次插入磁带机时自动分配唯一数字 ID
 - ID 可在高级提示框（F3+H）中查看
 - 数据持久保存在世界存档目录下的 `computercraft/cassette_tape/` 中
+
+## 音频播放
+
+磁带可作为 DFPWM 编码音频的存储介质。将 DFPWM 数据写入磁带后，可在磁带机中播放。
+
+支持的 DFPWM 格式：
+- **带头文件：** CC:Tweaked `cc.audio.dfpwm.encode()` 输出（带 `DFPWM\n` 6 字节头）
+- **无头文件：** ffmpeg `-f dfpwm` 输出（原始 DFPWM 数据）
+
+使用 ffmpeg 转换音频到 DFPWM：
+```bash
+ffmpeg -i input.mp3 -ac 1 -ar 48000 -f dfpwm output.dfpwm
+```
+
+将 DFPWM 文件写入磁带（Lua）：
+```lua
+local drive = peripheral.find("cassette_drive")
+local handle = drive.open("wb")
+local f = fs.open("music.dfpwm", "rb")
+handle.write(f.readAll())
+f.close()
+handle.close()
+```
 
 ## 合成
 

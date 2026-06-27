@@ -20,6 +20,8 @@ When placed next to a CC: Tweaked computer, it acts as a peripheral (type `casse
 
 When a cassette tape is inserted, the drive provides the following Lua methods:
 
+### Data I/O
+
 | Method | Returns | Description |
 |--------|---------|-------------|
 | `isTapePresent()` | `boolean` | Whether a cassette tape is inserted |
@@ -34,6 +36,47 @@ When a cassette tape is inserted, the drive provides the following Lua methods:
 | `reset()` | — | Closes handle and clears all data |
 
 The file handle returned by `open()` supports `read()`, `write()`, `writeLine()`, `seek()`, and `close()` — similar to Lua's `io` library.
+
+### Audio Playback
+
+The cassette drive can play DFPWM-encoded audio stored on cassette tapes. Both CC:Tweaked-encoded files (with `DFPWM\n` 6-byte header) and raw ffmpeg DFPWM output are supported.
+
+Playback can be triggered via CC computer or redstone. A comparator outputs strength 15 while playing, 0 otherwise.
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `playTape()` | `boolean` | Start or resume playback. Errors if tape is empty or not DFPWM format |
+| `pauseTape()` | — | Pause playback, preserving position |
+| `stopTape()` | — | Stop playback and reset to beginning |
+| `seekTape(seconds)` | — | Jump to a specific time in seconds (`seconds >= 0`) |
+| `setVolume(vol)` | — | Set volume (0.0 ~ config.maxVolume, default 3.0) |
+| `getVolume()` | `number` | Get current volume |
+| `isPlaying()` | `boolean` | Whether the tape is currently playing |
+| `getPlayPosition()` | `number` | Current playback position in seconds |
+| `getTapeDuration()` | `number` | Total audio duration in seconds. Returns 0 if empty or no tape |
+
+### Playback Events
+
+| Event | When |
+|-------|------|
+| `tape_play_start` | Playback starts |
+| `tape_play_end` | Playback completes (progress auto-resets) |
+
+```lua
+local d = peripheral.find("cassette_drive")
+d.playTape()
+local _, side = os.pullEvent("tape_play_end")
+print("Playback finished: " .. side)
+```
+
+### Redstone
+
+- **Pulse (0→non-zero):** Start playback from beginning
+- **Comparator:** 15 when playing, 0 when stopped/paused
+
+### Volume
+
+`volume` specifies the audible distance (≥ 0.0). Values below 1.0 reduce the sound and shrink the audible sphere. Values above 1.0 do not increase loudness but multiply the audible range (16m at 1.0). Sound fades with distance from the sphere center. Upper limit is configurable (default 3.0 in `lingua_peripherals.conf`).
 
 ## Data Storage
 
