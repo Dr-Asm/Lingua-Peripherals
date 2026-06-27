@@ -440,7 +440,6 @@ public class CassetteDriveBlockEntity extends BlockEntity implements MenuProvide
                     player.connection.send(packet);
                 }
             }
-            audioOffset = playbackController.getSampleOffset();
             setChanged();
         }
     }
