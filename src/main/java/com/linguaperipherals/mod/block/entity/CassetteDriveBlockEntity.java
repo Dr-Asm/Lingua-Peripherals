@@ -7,6 +7,7 @@ import com.linguaperipherals.mod.init.ModBlockEntities;
 import com.linguaperipherals.mod.inventory.CassetteDriveMenu;
 import com.linguaperipherals.mod.item.CassetteTapeItem;
 import com.linguaperipherals.mod.network.CassetteAudioPayload;
+import com.linguaperipherals.mod.network.CassetteAudioStopPayload;
 import com.linguaperipherals.mod.peripheral.CassetteDrivePeripheral;
 import com.linguaperipherals.mod.peripheral.CassetteTapeFileHandle;
 import com.linguaperipherals.mod.peripheral.CassetteTapeStorage;
@@ -285,8 +286,11 @@ public class CassetteDriveBlockEntity extends BlockEntity implements MenuProvide
     }
 
     private void sendStopPayload(ServerLevel sl) {
-        // Client-side CassetteAudioManager cleanup is handled
-        // implicitly when no more audio arrives
+        var payload = new CassetteAudioStopPayload(worldPosition.asLong());
+        var packet = new ClientboundCustomPayloadPacket(payload);
+        for (var player : sl.getServer().getPlayerList().getPlayers()) {
+            player.connection.send(packet);
+        }
     }
 
     private void refreshStorage() {

@@ -26,4 +26,10 @@ public class ClientPayloadHandler {
             CassetteAudioManager.handleAudio(pos, payload.volume(), payload.content());
         });
     }
+
+    public static void handleCassetteAudioStop(final CassetteAudioStopPayload payload, final IPayloadContext context) {
+        context.enqueueWork(() -> {
+            CassetteAudioManager.stopSound(BlockPos.of(payload.blockPos()));
+        });
+    }
 }

@@ -182,7 +182,7 @@ public class CassetteDrivePeripheral implements IPeripheral {
     /**
      * Get the current playback volume.
      */
-    @LuaFunction
+    @LuaFunction(mainThread = true)
     public final double getVolume() {
         return blockEntity.getAudioVolume();
     }
@@ -190,7 +190,7 @@ public class CassetteDrivePeripheral implements IPeripheral {
     /**
      * Check if the tape is currently playing.
      */
-    @LuaFunction
+    @LuaFunction(mainThread = true)
     public final boolean isPlaying() {
         return blockEntity.isPlaying();
     }
@@ -198,7 +198,7 @@ public class CassetteDrivePeripheral implements IPeripheral {
     /**
      * Get the current playback position in seconds.
      */
-    @LuaFunction
+    @LuaFunction(mainThread = true)
     public final double getPlayPosition() {
         return blockEntity.getPlayPosition();
     }
@@ -206,7 +206,7 @@ public class CassetteDrivePeripheral implements IPeripheral {
     /**
      * Get the total audio duration in seconds.
      */
-    @LuaFunction
+    @LuaFunction(mainThread = true)
     public final double getTapeDuration() {
         return blockEntity.getTapeDuration();
     }
