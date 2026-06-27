@@ -140,4 +140,38 @@ public class DfpwmEncoder {
         pendingVolume = 1.0f;
         pendingAudio = null;
     }
+
+    // ==================== One-shot encoding (for saveAudio) ====================
+
+    /**
+     * Encode a full Lua table of PCM samples to raw DFPWM bytes in one shot.
+     * Does NOT use the streaming/pending mechanism — just encodes and returns.
+     *
+     * @param table Lua table of samples (-128 to 127)
+     * @param size  Number of samples
+     * @return Raw DFPWM bytes (without header)
+     */
+    public synchronized byte[] encodeAll(LuaTable<?, ?> table, int size) throws LuaException {
+        if (size <= 0) throw new LuaException("Cannot encode empty audio");
+        if (size > 128 * 1024 * 128) throw new LuaException("Audio data is too large");
+
+        int outSize = size / 8;
+        byte[] output = new byte[outSize];
+
+        for (int i = 0; i < outSize; i++) {
+            int thisByte = 0;
+            for (int j = 1; j <= 8; j++) {
+                int level = table.getInt(i * 8 + j);
+                if (level < -128 || level > 127) {
+                    throw new LuaException("table item #" + (i * 8 + j) + " must be between -128 and 127");
+                }
+                boolean currentBit = level > charge || (level == charge && charge == 127);
+                encodeBit(currentBit);
+                thisByte = (thisByte >> 1) + (currentBit ? 128 : 0);
+            }
+            output[i] = (byte) thisByte;
+        }
+
+        return output;
+    }
 }

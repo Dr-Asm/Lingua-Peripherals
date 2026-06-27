@@ -4,6 +4,7 @@ import com.linguaperipherals.mod.block.entity.CassetteDriveBlockEntity;
 import com.linguaperipherals.mod.item.CassetteTapeItem;
 import dan200.computercraft.api.lua.LuaException;
 import dan200.computercraft.api.lua.LuaFunction;
+import dan200.computercraft.api.lua.LuaTable;
 import dan200.computercraft.api.peripheral.IComputerAccess;
 import dan200.computercraft.api.peripheral.IPeripheral;
 import net.minecraft.world.item.ItemStack;
@@ -216,6 +217,63 @@ public class CassetteDrivePeripheral implements IPeripheral {
     public void queueEvent(String eventName) {
         for (IComputerAccess comp : attachedComputers) {
             comp.queueEvent(eventName, comp.getAttachmentName());
+        }
+    }
+
+    // ==================== saveAudio ====================
+
+    /**
+     * Encode a table of PCM audio samples to DFPWM format and write to the cassette tape.
+     * Overwrites any existing data on the tape. The samples must be integers
+     * between -128 and 127.
+     *
+     * @param audio Lua table of PCM samples (1-indexed)
+     * @param size  Number of samples (must be a multiple of 8)
+     * @cc.tparam {number...} audio A table of PCM amplitudes (-128 to 127)
+     * @cc.usage Encode and save audio to a tape
+     * <pre>{@code
+     * local drive = peripheral.find("cassette_drive")
+     * -- Generate a simple 440Hz sine wave tone
+     * local samples = {}
+     * for i = 1, 48000 do
+     *     samples[i] = math.floor(math.sin(i * 440 * 2 * math.pi / 48000) * 127)
+     * end
+     * drive.saveAudio(samples)
+     * }</pre>
+     */
+    @LuaFunction(mainThread = true, unsafe = true)
+    public final void saveAudio(IComputerAccess computer, LuaTable<?, ?> audio) throws LuaException {
+        CassetteTapeStorage storage = blockEntity.getTapeStorage();
+        if (storage == null) throw new LuaException("No cassette tape in drive");
+
+        int length = audio.length();
+        if (length <= 0) throw new LuaException("Cannot save empty audio");
+        if (length % 8 != 0) throw new LuaException("Audio length must be a multiple of 8");
+        if (length > 128 * 1024 * 128) throw new LuaException("Audio data is too large");
+
+        // Stop any current playback and close all file handles
+        blockEntity.stopPlayback();
+        blockEntity.closeAllHandles();
+
+        // Encode PCM to DFPWM
+        DfpwmEncoder encoder = new DfpwmEncoder();
+        byte[] dfpwmData = encoder.encodeAll(audio, length);
+
+        // Write DFPWM header + data to tape, overwriting existing content
+        try {
+            java.nio.file.Path path = storage.getFilePath();
+            java.nio.file.Files.createDirectories(path.getParent());
+            java.io.OutputStream out = java.nio.file.Files.newOutputStream(path);
+            try (out) {
+                // Write "DFPWM\n" header
+                out.write(new byte[]{0x44, 0x46, 0x50, 0x57, 0x4D, 0x0A});
+                // Write encoded data
+                out.write(dfpwmData);
+            }
+            // Re-initialize storage to pick up the new file
+            blockEntity.refreshStorage();
+        } catch (IOException e) {
+            throw new LuaException("Failed to save audio: " + e.getMessage());
         }
     }
 }

@@ -54,6 +54,7 @@ Playback can be triggered via CC computer or redstone. A comparator outputs stre
 | `isPlaying()` | `boolean` | Whether the tape is currently playing |
 | `getPlayPosition()` | `number` | Current playback position in seconds |
 | `getTapeDuration()` | `number` | Total audio duration in seconds. Returns 0 if empty or no tape |
+| `saveAudio(audio)` | — | Encodes a PCM sample table (-128 to 127) to DFPWM and writes to tape, overwriting existing data |
 
 ### Playback Events
 

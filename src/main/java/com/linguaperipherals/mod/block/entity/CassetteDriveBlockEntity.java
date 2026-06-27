@@ -318,7 +318,7 @@ public class CassetteDriveBlockEntity extends BlockEntity implements MenuProvide
         }
     }
 
-    private void refreshStorage() {
+    public void refreshStorage() {
         ItemStack stack = getStoredItem();
         if (stack.getItem() instanceof CassetteTapeItem && level instanceof ServerLevel sl) {
             int id = CassetteTapeItem.getCassetteID(stack);

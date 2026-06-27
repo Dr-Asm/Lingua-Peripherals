@@ -54,6 +54,7 @@
 | `isPlaying()` | `boolean` | 是否正在播放 |
 | `getPlayPosition()` | `number` | 当前播放位置（秒） |
 | `getTapeDuration()` | `number` | 音频总时长（秒）。文件为空或无磁带时返回 0 |
+| `saveAudio(audio)` | — | 将 PCM 采样表（-128~127）编码为 DFPWM 并写入磁带，覆盖原有数据 |
 
 ### 播放事件
 

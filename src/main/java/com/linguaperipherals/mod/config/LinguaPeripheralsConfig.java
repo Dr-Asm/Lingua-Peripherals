@@ -23,8 +23,8 @@ public class LinguaPeripheralsConfig {
                 .defineInRange("speechMaxFrequency", 0, 0, Integer.MAX_VALUE);
 
         CASSETTE_TAPE_SIZE_LIMIT = BUILDER
-                .comment("Maximum data size for a cassette tape, in bytes. Default: 256KB (262144)")
-                .defineInRange("cassetteTapeSizeLimit", 256 * 1024, 1024, Integer.MAX_VALUE);
+                .comment("Maximum data size for a cassette tape, in bytes. Default: 1MB (1048576)")
+                .defineInRange("cassetteTapeSizeLimit", 1024 * 1024, 1024, Integer.MAX_VALUE);
 
         MAX_VOLUME = BUILDER
                 .comment("Maximum volume for cassette tape playback. Volume affects audible range (1.0 = 16m radius). Default: 3.0")
