@@ -167,7 +167,8 @@ public class CassetteDriveBlockEntity extends BlockEntity implements MenuProvide
     // ==================== Playback Control ====================
 
     public double getPlayPosition() {
-        if (playState == PlayState.STOPPED) return 0.0;
+        if (playState == PlayState.STOPPED)
+            return audioOffset / (double) DfpwmEncoder.SAMPLE_RATE;
         long offset = audioOffset;
         if (playState == PlayState.PLAYING && playResumeTime > 0) {
             offset += (System.nanoTime() - playResumeTime) * DfpwmEncoder.SAMPLE_RATE / 1_000_000_000L;
@@ -214,10 +215,22 @@ public class CassetteDriveBlockEntity extends BlockEntity implements MenuProvide
             return false;
         }
 
+        // Resume from pause: recreate controller and restart streaming
         if (playState == PlayState.PAUSED) {
-            playState = PlayState.PLAYING;
-            playResumeTime = System.nanoTime();
-            return true;
+            try {
+                playbackController = new DfpwmPlaybackController();
+                playbackController.init(tapeStorage.getFilePath(), audioOffset);
+                totalSamples = Math.max(0, tapeStorage.size() - getDfpwmDataOffset()) * 8L;
+                playResumeTime = System.nanoTime();
+                playState = PlayState.PLAYING;
+                if (level != null && !level.isClientSide) {
+                    level.updateNeighbourForOutputSignal(worldPosition, getBlockState().getBlock());
+                }
+                return true;
+            } catch (IOException e) {
+                LinguaPeripherals.LOGGER.error("Failed to resume playback", e);
+                return false;
+            }
         }
 
         // Fresh start or restart
@@ -245,6 +258,11 @@ public class CassetteDriveBlockEntity extends BlockEntity implements MenuProvide
         long elapsed = (System.nanoTime() - playResumeTime) * DfpwmEncoder.SAMPLE_RATE / 1_000_000_000L;
         audioOffset += elapsed;
         playState = PlayState.PAUSED;
+        playbackController = null;
+        if (level instanceof ServerLevel sl) sendStopPayload(sl);
+        if (level != null && !level.isClientSide) {
+            level.updateNeighbourForOutputSignal(worldPosition, getBlockState().getBlock());
+        }
         setChanged();
     }
 
