@@ -10,9 +10,9 @@ import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.List;
 
 public class CassetteDrivePeripheral implements IPeripheral {
     private final CassetteDriveBlockEntity blockEntity;
@@ -40,6 +40,8 @@ public class CassetteDrivePeripheral implements IPeripheral {
         if (!(other instanceof CassetteDrivePeripheral that)) return false;
         return blockEntity.getBlockPos().equals(that.blockEntity.getBlockPos());
     }
+
+    // ==================== Inventory / Tape Info ====================
 
     @LuaFunction
     public final boolean isTapePresent() {
@@ -122,6 +124,98 @@ public class CassetteDrivePeripheral implements IPeripheral {
             java.nio.file.Files.write(storage.getFilePath(), new byte[0]);
         } catch (IOException e) {
             throw new LuaException("Failed to reset tape: " + e.getMessage());
+        }
+    }
+
+    // ==================== Playback API ====================
+
+    /**
+     * Start or resume tape playback. Throws an error if the tape is missing
+     * or the data is not in DFPWM format.
+     */
+    @LuaFunction(mainThread = true)
+    public final boolean playTape() throws LuaException {
+        if (!isTapePresent()) throw new LuaException("No cassette tape in drive");
+        if (blockEntity.getTapeStorage() == null)
+            throw new LuaException("Tape storage not initialized");
+        if (!blockEntity.isDfpwmFormat())
+            throw new LuaException("Tape has no audio data (file is empty)");
+        return blockEntity.startPlayback();
+    }
+
+    /**
+     * Pause tape playback. The audio offset is preserved for later resumption.
+     */
+    @LuaFunction(mainThread = true)
+    public final void pauseTape() throws LuaException {
+        if (!isTapePresent()) throw new LuaException("No cassette tape in drive");
+        blockEntity.pausePlayback();
+    }
+
+    /**
+     * Stop tape playback and reset the play position to the beginning.
+     */
+    @LuaFunction(mainThread = true)
+    public final void stopTape() throws LuaException {
+        if (!isTapePresent()) throw new LuaException("No cassette tape in drive");
+        blockEntity.stopPlayback();
+    }
+
+    /**
+     * Seek to a specific position in seconds.
+     */
+    @LuaFunction(mainThread = true)
+    public final void seekTape(double seconds) throws LuaException {
+        if (!isTapePresent()) throw new LuaException("No cassette tape in drive");
+        if (seconds < 0) throw new LuaException("seconds must be non-negative");
+        blockEntity.seekTape(seconds);
+    }
+
+    /**
+     * Set playback volume. Clamped to [0, config.maxVolume].
+     */
+    @LuaFunction(mainThread = true)
+    public final void setVolume(double vol) throws LuaException {
+        blockEntity.setVolume((float) vol);
+    }
+
+    /**
+     * Get the current playback volume.
+     */
+    @LuaFunction
+    public final double getVolume() {
+        return blockEntity.getAudioVolume();
+    }
+
+    /**
+     * Check if the tape is currently playing.
+     */
+    @LuaFunction
+    public final boolean isPlaying() {
+        return blockEntity.isPlaying();
+    }
+
+    /**
+     * Get the current playback position in seconds.
+     */
+    @LuaFunction
+    public final double getPlayPosition() {
+        return blockEntity.getPlayPosition();
+    }
+
+    /**
+     * Get the total audio duration in seconds.
+     */
+    @LuaFunction
+    public final double getTapeDuration() {
+        return blockEntity.getTapeDuration();
+    }
+
+    // ==================== Event Helpers ====================
+
+    public void queueEvent(String eventName) {
+        for (IComputerAccess comp : attachedComputers) {
+            comp.queueEvent(eventName, comp.getAttachmentName());
         }
     }
 }

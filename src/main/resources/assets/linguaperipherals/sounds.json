@@ -1,0 +1,10 @@
+{
+    "cassette_drive.stream": {
+        "sounds": [
+            {
+                "name": "linguaperipherals:empty",
+                "stream": true
+            }
+        ]
+    }
+}

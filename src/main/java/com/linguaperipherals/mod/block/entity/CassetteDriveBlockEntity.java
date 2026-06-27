@@ -6,9 +6,11 @@ import com.linguaperipherals.mod.config.LinguaPeripheralsConfig;
 import com.linguaperipherals.mod.init.ModBlockEntities;
 import com.linguaperipherals.mod.inventory.CassetteDriveMenu;
 import com.linguaperipherals.mod.item.CassetteTapeItem;
+import com.linguaperipherals.mod.network.CassetteAudioPayload;
 import com.linguaperipherals.mod.peripheral.CassetteDrivePeripheral;
 import com.linguaperipherals.mod.peripheral.CassetteTapeFileHandle;
 import com.linguaperipherals.mod.peripheral.CassetteTapeStorage;
+import com.linguaperipherals.mod.peripheral.DfpwmEncoder;
 import dan200.computercraft.api.ComputerCraftAPI;
 import dan200.computercraft.api.peripheral.IComputerAccess;
 import net.minecraft.core.BlockPos;
@@ -17,6 +19,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
@@ -34,14 +37,59 @@ import net.minecraft.world.level.storage.LevelResource;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class CassetteDriveBlockEntity extends BlockEntity implements MenuProvider {
     private static final LevelResource CC_FOLDER = new LevelResource("computercraft");
+    private static final byte[] DFPWM_MAGIC = {
+        (byte) 0x44, (byte) 0x46, (byte) 0x50, (byte) 0x57, (byte) 0x4D, (byte) 0x0A
+    };
 
+    /**
+     * Get the byte offset where actual DFPWM audio data starts.
+     * If the file has a 6-byte "DFPWM\\n" header, data starts at byte 6.
+     * Otherwise, data starts at byte 0 (raw DFPWM, e.g. from ffmpeg).
+     */
+    public int getDfpwmDataOffset() {
+        if (tapeStorage == null) return 0;
+        try {
+            Path path = tapeStorage.getFilePath();
+            byte[] bytes = Files.readAllBytes(path);
+            if (bytes.length >= 6 && Arrays.equals(Arrays.copyOf(bytes, 6), DFPWM_MAGIC)) {
+                return 6;
+            }
+        } catch (IOException e) {
+            LinguaPeripherals.LOGGER.warn("Failed to read DFPWM header", e);
+        }
+        return 0;
+    }
+
+    public long getDfpwmDataSize() {
+        if (tapeStorage == null) return 0;
+        long size = tapeStorage.size();
+        long offset = getDfpwmDataOffset();
+        return Math.max(0, size - offset);
+    }
+
+    public enum PlayState { STOPPED, PLAYING, PAUSED }
+
+    // ---- NBT-persisted playback state ----
+    private long audioOffset;
+    private float audioVolume = 1.0f;
+
+    // ---- Transient playback state ----
+    private PlayState playState = PlayState.STOPPED;
+    private DfpwmPlaybackController playbackController;
+    private long playResumeTime; // System.nanoTime() when last started/resumed
+    private boolean pendingPlayStartEvent;
+    private boolean pendingPlayEndEvent;
+
+    // ---- Inventory ----
     private final NonNullList<ItemStack> items = NonNullList.withSize(1, ItemStack.EMPTY);
     private final Container inventory = new Container() {
         @Override public int getContainerSize() { return 1; }
@@ -68,6 +116,7 @@ public class CassetteDriveBlockEntity extends BlockEntity implements MenuProvide
         @Override public void clearContent() { items.clear(); onItemChanged(); }
     };
 
+    // ---- Peripheral / Handles ----
     private final CassetteDrivePeripheral peripheral = new CassetteDrivePeripheral(this);
     private @Nullable CassetteTapeStorage tapeStorage;
     private final Map<IComputerAccess, CassetteTapeFileHandle> computerHandles = new ConcurrentHashMap<>();
@@ -77,49 +126,167 @@ public class CassetteDriveBlockEntity extends BlockEntity implements MenuProvide
         super(ModBlockEntities.CASSETTE_DRIVE_BE.get(), pos, state);
     }
 
+    // ==================== Accessors ====================
+
     public CassetteDrivePeripheral getPeripheral() { return peripheral; }
     public Container getInventory() { return inventory; }
     public ItemStack getStoredItem() { return items.get(0); }
     public @Nullable CassetteTapeStorage getTapeStorage() { return tapeStorage; }
 
+    public PlayState getPlayState() { return playState; }
+    public boolean isPlaying() { return playState == PlayState.PLAYING; }
+    public boolean isPaused() { return playState == PlayState.PAUSED; }
+    public long getAudioOffset() { return audioOffset; }
+    public float getAudioVolume() { return audioVolume; }
+
+    // ==================== Handle management ====================
+
     public void closeHandle(IComputerAccess computer) {
         CassetteTapeFileHandle old = computerHandles.remove(computer);
-        if (old != null) {
-            try { old.forceClose(); } catch (IOException ignored) {}
-        }
+        if (old != null) { try { old.forceClose(); } catch (IOException ignored) {} }
     }
 
     public void trackHandle(IComputerAccess computer, CassetteTapeFileHandle handle) {
         computerHandles.put(computer, handle);
     }
 
-    @Override
-    public void clearRemoved() {
-        super.clearRemoved();
-        if (level != null && !level.isClientSide) refreshStorage();
+    public void closeAllHandles() {
+        for (CassetteTapeFileHandle h : computerHandles.values()) {
+            try { h.forceClose(); } catch (IOException ignored) {}
+        }
+        computerHandles.clear();
+        if (tapeStorage != null) tapeStorage.forceClose();
     }
 
-    @Override
-    public void setRemoved() {
-        super.setRemoved();
-        closeAllHandles();
-        tapeStorage = null;
-    }
-
-    public void onComputerDetach(IComputerAccess computer) {
-        closeHandle(computer);
-    }
-
+    public void onComputerDetach(IComputerAccess computer) { closeHandle(computer); }
     public void requestEject() { ejectQueued.set(true); }
+
+    // ==================== Playback Control ====================
+
+    public double getPlayPosition() {
+        if (playState == PlayState.STOPPED) return 0.0;
+        long offset = audioOffset;
+        if (playState == PlayState.PLAYING && playResumeTime > 0) {
+            offset += (System.nanoTime() - playResumeTime) * DfpwmEncoder.SAMPLE_RATE / 1_000_000_000L;
+        }
+        return offset / (double) DfpwmEncoder.SAMPLE_RATE;
+    }
+
+    public double getTapeDuration() {
+        if (tapeStorage == null) return 0.0;
+        long totalSamples = getDfpwmDataSize() * 8L;
+        return totalSamples / (double) DfpwmEncoder.SAMPLE_RATE;
+    }
+
+    public void setVolume(float vol) {
+        audioVolume = Math.max(0.0f, Math.min(vol, LinguaPeripheralsConfig.MAX_VOLUME.get().floatValue()));
+        setChanged();
+    }
+
+    public void seekTape(double seconds) {
+        if (playbackController != null) {
+            // Re-initialize with new offset
+            if (tapeStorage != null) {
+                try {
+                    playbackController.init(tapeStorage.getFilePath(), (long)(seconds * DfpwmEncoder.SAMPLE_RATE));
+                } catch (IOException ignored) {}
+            }
+        }
+        audioOffset = (long)(seconds * DfpwmEncoder.SAMPLE_RATE);
+        if (playState == PlayState.PLAYING) playResumeTime = System.nanoTime();
+        setChanged();
+    }
+
+    public boolean startPlayback() {
+        if (playState == PlayState.PLAYING) return false;
+        if (tapeStorage == null) {
+            LinguaPeripherals.LOGGER.warn("startPlayback: tapeStorage is null");
+            return false;
+        }
+        if (!isDfpwmFormat()) {
+            LinguaPeripherals.LOGGER.warn("startPlayback: tape file has no DFPWM audio data (empty or missing). Path: {}",
+                    tapeStorage.getFilePath());
+            return false;
+        }
+
+        if (playState == PlayState.PAUSED) {
+            playState = PlayState.PLAYING;
+            playResumeTime = System.nanoTime();
+            return true;
+        }
+
+        // Fresh start or restart
+        try {
+            playbackController = new DfpwmPlaybackController();
+            playbackController.init(tapeStorage.getFilePath(), audioOffset);
+            playResumeTime = System.nanoTime();
+            playState = PlayState.PLAYING;
+            pendingPlayStartEvent = true;
+            // Notify redstone neighbors
+            if (level != null && !level.isClientSide) {
+                level.updateNeighbourForOutputSignal(worldPosition, getBlockState().getBlock());
+            }
+            return true;
+        } catch (IOException e) {
+            LinguaPeripherals.LOGGER.error("Failed to start playback", e);
+            return false;
+        }
+    }
+
+    public void pausePlayback() {
+        if (playState != PlayState.PLAYING) return;
+        long elapsed = (System.nanoTime() - playResumeTime) * DfpwmEncoder.SAMPLE_RATE / 1_000_000_000L;
+        audioOffset += elapsed;
+        playState = PlayState.PAUSED;
+        setChanged();
+    }
+
+    public void stopPlayback() {
+        stopPlaybackInternal();
+        setChanged();
+    }
+
+    private void stopPlaybackInternal() {
+        playState = PlayState.STOPPED;
+        audioOffset = 0;
+        playResumeTime = 0;
+        playbackController = null;
+        if (level instanceof ServerLevel sl) sendStopPayload(sl);
+        if (level != null && !level.isClientSide) {
+            level.updateNeighbourForOutputSignal(worldPosition, getBlockState().getBlock());
+        }
+    }
+
+    // ==================== DFPWM format detection ====================
+
+    /**
+     * Check if the tape contains playable DFPWM audio data.
+     * Accepts both raw DFPWM (e.g. ffmpeg output) and files with a "DFPWM\\n" header.
+     */
+    public boolean isDfpwmFormat() {
+        return getDfpwmDataSize() > 0;
+    }
+
+    // ==================== Redstone ====================
+
+    public int getRedstoneSignal() {
+        return (playState == PlayState.PLAYING) ? 15 : 0;
+    }
 
     // ==================== Internal ====================
 
     private void onItemChanged() {
         if (level != null && !level.isClientSide) {
+            stopPlaybackInternal();
             closeAllHandles();
             updateBlockState(getStoredItem());
             refreshStorage();
         }
+    }
+
+    private void sendStopPayload(ServerLevel sl) {
+        // Client-side CassetteAudioManager cleanup is handled
+        // implicitly when no more audio arrives
     }
 
     private void refreshStorage() {
@@ -168,6 +335,7 @@ public class CassetteDriveBlockEntity extends BlockEntity implements MenuProvide
         if (level == null || level.isClientSide) return;
         ItemStack stack = getStoredItem();
         if (stack.isEmpty()) return;
+        stopPlaybackInternal();
         closeAllHandles();
         tapeStorage = null;
         items.set(0, ItemStack.EMPTY);
@@ -193,30 +361,90 @@ public class CassetteDriveBlockEntity extends BlockEntity implements MenuProvide
         setChanged();
     }
 
-    private void closeAllHandles() {
-        for (CassetteTapeFileHandle h : computerHandles.values()) {
-            try { h.forceClose(); } catch (IOException ignored) {}
-        }
-        computerHandles.clear();
-        if (tapeStorage != null) tapeStorage.forceClose();
+    // ==================== Tick ====================
+
+    @Override
+    public void clearRemoved() {
+        super.clearRemoved();
+        if (level != null && !level.isClientSide) refreshStorage();
+    }
+
+    @Override
+    public void setRemoved() {
+        super.setRemoved();
+        stopPlaybackInternal();
+        closeAllHandles();
+        tapeStorage = null;
     }
 
     public void tick() {
         if (level == null || level.isClientSide) return;
+
         if (ejectQueued.getAndSet(false)) doEject();
+
+        if (playState == PlayState.PLAYING && playbackController != null) {
+            tickPlayback();
+        }
     }
+
+    private void tickPlayback() {
+        ServerLevel sl = (ServerLevel) level;
+        long now = System.nanoTime();
+
+        if (pendingPlayStartEvent) {
+            pendingPlayStartEvent = false;
+            peripheral.queueEvent("tape_play_start");
+        }
+
+        if (!playbackController.hasMoreData()) {
+            playState = PlayState.STOPPED;
+            audioOffset = 0;
+            playResumeTime = 0;
+            playbackController = null;
+            peripheral.queueEvent("tape_play_end");
+            level.updateNeighbourForOutputSignal(worldPosition, getBlockState().getBlock());
+            setChanged();
+            return;
+        }
+
+        // Read one chunk per tick and send it to all players in range
+        var audio = playbackController.readNextChunk();
+        if (audio != null) {
+            var payload = new CassetteAudioPayload(worldPosition.asLong(), audio, audioVolume);
+            var packet = new ClientboundCustomPayloadPacket(payload);
+            double range = Math.max(audioVolume, 1.0f) * 16.0;
+            for (var player : sl.getServer().getPlayerList().getPlayers()) {
+                if (player.distanceToSqr(
+                        worldPosition.getX() + 0.5, worldPosition.getY() + 0.5,
+                        worldPosition.getZ() + 0.5) <= range * range) {
+                    player.connection.send(packet);
+                }
+            }
+            audioOffset = playbackController.getSampleOffset();
+            setChanged();
+        }
+    }
+
+    // ==================== NBT ====================
 
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         ContainerHelper.saveAllItems(tag, items, registries);
+        tag.putLong("AudioOffset", audioOffset);
+        tag.putFloat("AudioVolume", audioVolume);
     }
 
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         ContainerHelper.loadAllItems(tag, items, registries);
+        audioOffset = tag.getLong("AudioOffset");
+        audioVolume = tag.getFloat("AudioVolume");
+        playState = PlayState.STOPPED;
     }
+
+    // ==================== Menu ====================
 
     @Nullable
     @Override

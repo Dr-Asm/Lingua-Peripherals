@@ -18,5 +18,10 @@ public class LinguaPeripheralsNetwork {
                 SpeakTextPayload.CODEC,
                 (payload, context) -> ClientPayloadHandler.handleSpeakText(payload, context)
         );
+        registrar.playToClient(
+                CassetteAudioPayload.TYPE,
+                CassetteAudioPayload.CODEC,
+                (payload, context) -> ClientPayloadHandler.handleCassetteAudio(payload, context)
+        );
     }
 }

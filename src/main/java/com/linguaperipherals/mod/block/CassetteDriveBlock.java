@@ -94,11 +94,49 @@ public class CassetteDriveBlock extends HorizontalDirectionalBlock implements En
         if (!state.is(newState.getBlock())) {
             BlockEntity be = level.getBlockEntity(pos);
             if (be instanceof CassetteDriveBlockEntity drive) {
+                drive.stopPlayback();
                 net.minecraft.world.Containers.dropContents(level, pos, drive.getInventory());
                 level.updateNeighbourForOutputSignal(pos, this);
             }
             super.onRemove(state, level, pos, newState, moved);
         }
+    }
+
+    // ==================== Redstone ====================
+
+    /**
+     * On redstone pulse (rising edge from 0 to >0), start playback from beginning.
+     */
+    @Override
+    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighborBlock, BlockPos neighborPos, boolean moved) {
+        if (!level.isClientSide) {
+            BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof CassetteDriveBlockEntity drive) {
+                boolean hasSignal = level.hasNeighborSignal(pos);
+                if (hasSignal && !drive.isPlaying()) {
+                    // Redstone pulse received — reset to beginning and start playback
+                    drive.stopPlayback();
+                    drive.startPlayback();
+                }
+            }
+        }
+    }
+
+    /**
+     * Comparator output: 15 when playing, 0 when not.
+     */
+    @Override
+    public boolean hasAnalogOutputSignal(BlockState state) {
+        return true;
+    }
+
+    @Override
+    public int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
+        BlockEntity be = level.getBlockEntity(pos);
+        if (be instanceof CassetteDriveBlockEntity drive) {
+            return drive.getRedstoneSignal();
+        }
+        return 0;
     }
 
     public enum CassetteState implements StringRepresentable {

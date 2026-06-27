@@ -1,7 +1,9 @@
 package com.linguaperipherals.mod.network;
 
-import com.mojang.text2speech.Narrator;
 import com.linguaperipherals.mod.LinguaPeripherals;
+import com.linguaperipherals.mod.client.audio.CassetteAudioManager;
+import com.mojang.text2speech.Narrator;
+import net.minecraft.core.BlockPos;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public class ClientPayloadHandler {
@@ -15,6 +17,13 @@ public class ClientPayloadHandler {
             } catch (Exception e) {
                 LinguaPeripherals.LOGGER.error("Failed to play voice: {}", e.getMessage());
             }
+        });
+    }
+
+    public static void handleCassetteAudio(final CassetteAudioPayload payload, final IPayloadContext context) {
+        context.enqueueWork(() -> {
+            BlockPos pos = BlockPos.of(payload.blockPos());
+            CassetteAudioManager.handleAudio(pos, payload.volume(), payload.content());
         });
     }
 }
