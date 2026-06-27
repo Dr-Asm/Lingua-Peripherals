@@ -86,7 +86,9 @@ public class CassetteDriveBlockEntity extends BlockEntity implements MenuProvide
     // ---- Transient playback state ----
     private PlayState playState = PlayState.STOPPED;
     private DfpwmPlaybackController playbackController;
-    private long playResumeTime; // System.nanoTime() when last started/resumed
+    private long playResumeTime;   // System.nanoTime() when last started/resumed
+    private long playFinishTime;   // Estimated System.nanoTime() when client finishes playing
+    private long totalSamples;     // Total samples in the file (for duration calculation)
     private boolean pendingPlayStartEvent;
     private boolean pendingPlayEndEvent;
 
@@ -170,6 +172,8 @@ public class CassetteDriveBlockEntity extends BlockEntity implements MenuProvide
         if (playState == PlayState.PLAYING && playResumeTime > 0) {
             offset += (System.nanoTime() - playResumeTime) * DfpwmEncoder.SAMPLE_RATE / 1_000_000_000L;
         }
+        // Cap at total duration
+        if (totalSamples > 0 && offset > totalSamples) offset = totalSamples;
         return offset / (double) DfpwmEncoder.SAMPLE_RATE;
     }
 
@@ -220,7 +224,9 @@ public class CassetteDriveBlockEntity extends BlockEntity implements MenuProvide
         try {
             playbackController = new DfpwmPlaybackController();
             playbackController.init(tapeStorage.getFilePath(), audioOffset);
+            totalSamples = Math.max(0, tapeStorage.size() - getDfpwmDataOffset()) * 8L;
             playResumeTime = System.nanoTime();
+            playFinishTime = 0;
             playState = PlayState.PLAYING;
             pendingPlayStartEvent = true;
             // Notify redstone neighbors
@@ -251,6 +257,7 @@ public class CassetteDriveBlockEntity extends BlockEntity implements MenuProvide
         playState = PlayState.STOPPED;
         audioOffset = 0;
         playResumeTime = 0;
+        playFinishTime = 0;
         playbackController = null;
         if (level instanceof ServerLevel sl) sendStopPayload(sl);
         if (level != null && !level.isClientSide) {
@@ -400,18 +407,27 @@ public class CassetteDriveBlockEntity extends BlockEntity implements MenuProvide
             peripheral.queueEvent("tape_play_start");
         }
 
+        // If all data has been sent, wait for the client to finish playing
         if (!playbackController.hasMoreData()) {
-            playState = PlayState.STOPPED;
-            audioOffset = 0;
-            playResumeTime = 0;
-            playbackController = null;
-            peripheral.queueEvent("tape_play_end");
-            level.updateNeighbourForOutputSignal(worldPosition, getBlockState().getBlock());
-            setChanged();
+            if (playFinishTime == 0) {
+                // Just finished sending — record when playback will actually end
+                playFinishTime = playResumeTime + totalSamples * 1_000_000_000L / DfpwmEncoder.SAMPLE_RATE;
+            }
+            if (now >= playFinishTime) {
+                // Client has finished playing
+                playState = PlayState.STOPPED;
+                audioOffset = 0;
+                playResumeTime = 0;
+                playFinishTime = 0;
+                playbackController = null;
+                peripheral.queueEvent("tape_play_end");
+                level.updateNeighbourForOutputSignal(worldPosition, getBlockState().getBlock());
+                setChanged();
+            }
             return;
         }
 
-        // Read one chunk per tick and send it to all players in range
+        // Still have data to send: read one chunk per tick and broadcast
         var audio = playbackController.readNextChunk();
         if (audio != null) {
             var payload = new CassetteAudioPayload(worldPosition.asLong(), audio, audioVolume);
