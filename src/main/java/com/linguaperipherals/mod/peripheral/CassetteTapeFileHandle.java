@@ -57,7 +57,7 @@ public class CassetteTapeFileHandle {
         checkClosed();
         if (!writable) throw new LuaException("File not open for writing");
         try {
-            byte[] bytes = data != null ? data.getBytes(StandardCharsets.UTF_8) : new byte[0];
+            byte[] bytes = data != null ? data.getBytes(StandardCharsets.ISO_8859_1) : new byte[0];
             checkSizeLimit(bytes.length);
             raf.write(bytes);
         } catch (IOException e) { throw new LuaException("Write error: " + e.getMessage()); }
@@ -120,7 +120,7 @@ public class CassetteTapeFileHandle {
         if (remaining > Integer.MAX_VALUE) remaining = Integer.MAX_VALUE;
         byte[] buf = new byte[(int) remaining];
         int read = raf.read(buf);
-        return read > 0 ? new String(buf, 0, read, StandardCharsets.UTF_8) : "";
+        return read > 0 ? new String(buf, 0, read, StandardCharsets.ISO_8859_1) : "";
     }
 
     private String readChars(int n) throws IOException {
@@ -128,7 +128,7 @@ public class CassetteTapeFileHandle {
         byte[] buf = new byte[n];
         int total = 0;
         while (total < n) { int r = raf.read(buf, total, n - total); if (r == -1) break; total += r; }
-        return total > 0 ? new String(buf, 0, total, StandardCharsets.UTF_8) : null;
+        return total > 0 ? new String(buf, 0, total, StandardCharsets.ISO_8859_1) : null;
     }
 
     @Nullable

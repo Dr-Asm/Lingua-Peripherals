@@ -3,7 +3,7 @@
 DIRNAME=$(dirname "$0")
 APP_HOME=$(cd "$DIRNAME" && pwd -P)
 
-DEFAULT_JVM_OPTS='"-Xmx64m" "-Xms64m"'
+DEFAULT_JVM_OPTS="-Xmx64m -Xms64m"
 
 if [ -z "$JAVA_HOME" ]; then
     JAVA_EXE=java
