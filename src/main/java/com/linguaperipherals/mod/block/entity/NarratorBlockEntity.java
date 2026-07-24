@@ -37,6 +37,7 @@ public class NarratorBlockEntity extends BlockEntity {
     }
 
     public void tick() {
+        getPeripheral().update();
     }
 
     @Override

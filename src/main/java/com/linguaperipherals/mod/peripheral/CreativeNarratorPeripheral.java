@@ -24,7 +24,7 @@ public class CreativeNarratorPeripheral extends NarratorPeripheral {
     public final boolean globalVoice(String text) throws LuaException {
         String decodedText = TextUtils.decodeEscapeSequences(text);
 
-        ServerLevel serverLevel = getServerLevel();
+        ServerLevel serverLevel = getLevel();
         if (serverLevel == null) return false;
 
         SpeakTextPayload payload = SpeakTextPayload.of(decodedText);

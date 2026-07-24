@@ -8,8 +8,8 @@ import dan200.computercraft.api.turtle.TurtleSide;
 import dan200.computercraft.api.turtle.TurtleUpgradeType;
 import dan200.computercraft.api.upgrades.UpgradeType;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -25,7 +25,9 @@ public class TurtleCreativeNarrator extends AbstractTurtleUpgrade {
         }
 
         @Override
-        protected @Nullable Level getLevel() { return turtle.getLevel(); }
+        protected ServerLevel getLevel() {
+            return turtle.getLevel() instanceof ServerLevel sl ? sl : null;
+        }
 
         @Override
         protected BlockPos getPos() { return turtle.getPosition(); }

@@ -4,5 +4,7 @@
   "block.linguaperipherals.cassette_drive": "녹음기",
   "item.linguaperipherals.cassette_tape": "녹음대",
   "itemGroup.linguaperipherals": "언어 페리페랄",
-  "tooltip.linguaperipherals.cassette_id": "녹음대 ID: %s"
+  "tooltip.linguaperipherals.cassette_id": "녹음대 ID: %s",
+  "upgrade.linguaperipherals.narrator.adjective": "해설자",
+  "upgrade.linguaperipherals.creative_narrator.adjective": "크리에이티브 해설자"
 }

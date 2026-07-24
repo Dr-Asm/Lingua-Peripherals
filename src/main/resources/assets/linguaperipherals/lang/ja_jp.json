@@ -4,5 +4,7 @@
   "block.linguaperipherals.cassette_drive": "録音装置",
   "item.linguaperipherals.cassette_tape": "録音帯",
   "itemGroup.linguaperipherals": "言語ペリフェラル",
-  "tooltip.linguaperipherals.cassette_id": "録音帯ID: %s"
+  "tooltip.linguaperipherals.cassette_id": "録音帯ID: %s",
+  "upgrade.linguaperipherals.narrator.adjective": "語り部",
+  "upgrade.linguaperipherals.creative_narrator.adjective": "クリエイティブの語り部"
 }

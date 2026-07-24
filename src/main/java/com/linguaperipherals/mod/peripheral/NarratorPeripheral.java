@@ -3,19 +3,20 @@ package com.linguaperipherals.mod.peripheral;
 import com.linguaperipherals.mod.block.entity.NarratorBlockEntity;
 import com.linguaperipherals.mod.config.LinguaPeripheralsConfig;
 import com.linguaperipherals.mod.network.SpeakTextPayload;
+import com.linguaperipherals.mod.util.TextUtils;
 import dan200.computercraft.api.lua.LuaException;
 import dan200.computercraft.api.lua.LuaFunction;
 import dan200.computercraft.api.peripheral.IComputerAccess;
 import dan200.computercraft.api.peripheral.IPeripheral;
+import dan200.computercraft.shared.peripheral.speaker.SpeakerPeripheral;
+import dan200.computercraft.shared.peripheral.speaker.SpeakerPosition;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
-import com.linguaperipherals.mod.util.TextUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +26,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class NarratorPeripheral implements IPeripheral {
+/**
+ * Narrator peripheral — TTS speech via Minecraft Narrator system, plus all
+ * standard CC Speaker functionality (playNote, playSound, playAudio, stop).
+ */
+public class NarratorPeripheral extends SpeakerPeripheral {
     private static final ScheduledExecutorService FINISH_SCHEDULER = Executors.newSingleThreadScheduledExecutor(r -> {
         Thread t = new Thread(r, "Narrator-Finish");
         t.setDaemon(true);
@@ -35,29 +40,22 @@ public class NarratorPeripheral implements IPeripheral {
     protected final NarratorBlockEntity blockEntity;
     protected final List<IComputerAccess> attachedComputers = new CopyOnWriteArrayList<>();
 
-    /** Block-based constructor (existing). */
+    /** Block-based constructor. */
     public NarratorPeripheral(NarratorBlockEntity blockEntity) {
         this.blockEntity = blockEntity;
     }
 
-    // ---- Overridable position hooks (for turtle upgrades) ----
+    // ---- SpeakerPeripheral abstract methods (overridable for turtles) ----
 
-    /** The level this peripheral is in. Override for turtle upgrades. */
-    @Nullable
-    protected Level getLevel() {
-        return blockEntity != null ? blockEntity.getWorld() : null;
+    @Override
+    protected ServerLevel getLevel() {
+        if (blockEntity != null && blockEntity.getWorld() instanceof ServerLevel sl) return sl;
+        return null;
     }
 
-    /** The block position this peripheral is at. Override for turtle upgrades. */
-    protected BlockPos getPos() {
-        return blockEntity != null ? blockEntity.getBlockPos() : BlockPos.ZERO;
-    }
-
-    /** Convenience: cast level to ServerLevel. */
-    @Nullable
-    protected ServerLevel getServerLevel() {
-        var level = getLevel();
-        return level instanceof ServerLevel sl && !level.isClientSide ? sl : null;
+    @Override
+    public SpeakerPosition getPosition() {
+        return SpeakerPosition.of(getLevel(), Vec3.atCenterOf(getPos()));
     }
 
     // ---- IPeripheral ----
@@ -69,11 +67,13 @@ public class NarratorPeripheral implements IPeripheral {
 
     @Override
     public void attach(IComputerAccess computer) {
+        super.attach(computer);
         attachedComputers.add(computer);
     }
 
     @Override
     public void detach(IComputerAccess computer) {
+        super.detach(computer);
         attachedComputers.remove(computer);
     }
 
@@ -83,6 +83,14 @@ public class NarratorPeripheral implements IPeripheral {
         if (!(other instanceof NarratorPeripheral that)) return false;
         return getPos().equals(that.getPos());
     }
+
+    // ---- Position helpers (for turtle overrides) ----
+
+    protected BlockPos getPos() {
+        return blockEntity != null ? blockEntity.getBlockPos() : BlockPos.ZERO;
+    }
+
+    // ---- Narrator-specific method ----
 
     @LuaFunction
     public final boolean playVoice(String text, Optional<Double> rad) throws LuaException {
@@ -94,7 +102,7 @@ public class NarratorPeripheral implements IPeripheral {
 
         String decodedText = TextUtils.decodeEscapeSequences(text);
 
-        ServerLevel serverLevel = getServerLevel();
+        ServerLevel serverLevel = getLevel();
         if (serverLevel == null) return false;
 
         BlockPos pos = getPos();
