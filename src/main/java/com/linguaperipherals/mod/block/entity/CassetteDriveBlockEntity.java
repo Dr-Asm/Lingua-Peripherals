@@ -450,12 +450,20 @@ public class CassetteDriveBlockEntity extends BlockEntity implements MenuProvide
         if (audio != null) {
             var payload = new CassetteAudioPayload(worldPosition.asLong(), audio, audioVolume);
             var packet = new ClientboundCustomPayloadPacket(payload);
-            double range = Math.max(audioVolume, 1.0f) * 16.0;
-            for (var player : sl.getServer().getPlayerList().getPlayers()) {
-                if (player.distanceToSqr(
-                        worldPosition.getX() + 0.5, worldPosition.getY() + 0.5,
-                        worldPosition.getZ() + 0.5) <= range * range) {
+            if (LinguaPeripheralsConfig.CASSETTE_BROADCAST_AUDIO.get()) {
+                // Broadcast to all online players regardless of distance
+                for (var player : sl.getServer().getPlayerList().getPlayers()) {
                     player.connection.send(packet);
+                }
+            } else {
+                // Send only to players within audible range
+                double range = Math.max(audioVolume, 1.0f) * 16.0;
+                for (var player : sl.getServer().getPlayerList().getPlayers()) {
+                    if (player.distanceToSqr(
+                            worldPosition.getX() + 0.5, worldPosition.getY() + 0.5,
+                            worldPosition.getZ() + 0.5) <= range * range) {
+                        player.connection.send(packet);
+                    }
                 }
             }
             setChanged();

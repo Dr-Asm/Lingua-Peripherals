@@ -55,4 +55,9 @@ public class CassetteSound extends AbstractSoundInstance implements TickableSoun
     void stopSound() {
         stopped = true;
     }
+
+    /** Update volume mid-playback. Called by CassetteAudioManager when new chunks arrive. */
+    public void setVolume(float volume) {
+        this.volume = volume;
+    }
 }

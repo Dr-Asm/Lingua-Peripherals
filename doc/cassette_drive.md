@@ -79,6 +79,14 @@ print("Playback finished: " .. side)
 
 `volume` specifies the audible distance (≥ 0.0). Values below 1.0 reduce the sound and shrink the audible sphere. Values above 1.0 do not increase loudness but multiply the audible range (16m at 1.0). Sound fades with distance from the sphere center. Upper limit is configurable (default 3.0 in `lingua_peripherals.conf`).
 
+### Config Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `cassetteTapeSizeLimit` | int | 1048576 (1MB) | Maximum tape data file size in bytes |
+| `maxVolume` | double | 3.0 | Maximum playback volume |
+| `cassetteBroadcastAudio` | boolean | false | `true`: send audio to all online players (ignoring distance); `false`: only send to players within audible range |
+
 ## Data Storage
 
 - Tapes store a single binary file per ID under `computercraft/cassette_tape/<id>/data.bin`

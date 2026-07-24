@@ -79,6 +79,14 @@ print("播放完成: " .. side)
 
 `volume` 指定声音能被听见的距离（≥ 0.0）。对小于 1.0 的值，声音会相对减轻，可闻范围缩小。对大于 1.0 的值，声音不增大但可闻范围（1.0 时 16 米）与音量相乘。声音基于球体中心距离逐渐衰减。上限可在 `lingua_peripherals.conf` 中配置（默认 3.0）。
 
+### 配置项
+
+| 配置项 | 类型 | 默认值 | 说明 |
+|--------|------|--------|------|
+| `cassetteTapeSizeLimit` | int | 1048576 (1MB) | 磁带数据文件大小上限（字节） |
+| `maxVolume` | double | 3.0 | 播放音量上限 |
+| `cassetteBroadcastAudio` | boolean | false | `true`：音频发送给全体在线玩家（无视距离）；`false`：仅发送给可闻范围内的玩家 |
+
 ## 数据存储
 
 - 磁带以单文件形式存储于 `computercraft/cassette_tape/<id>/data.bin`

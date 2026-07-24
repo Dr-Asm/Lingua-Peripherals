@@ -10,6 +10,7 @@ public class LinguaPeripheralsConfig {
     public static final ModConfigSpec.IntValue SPEECH_MAX_FREQUENCY;
     public static final ModConfigSpec.IntValue CASSETTE_TAPE_SIZE_LIMIT;
     public static final ModConfigSpec.DoubleValue MAX_VOLUME;
+    public static final ModConfigSpec.BooleanValue CASSETTE_BROADCAST_AUDIO;
 
     static {
         BUILDER.push("general");
@@ -29,6 +30,10 @@ public class LinguaPeripheralsConfig {
         MAX_VOLUME = BUILDER
                 .comment("Maximum volume for cassette tape playback. Volume affects audible range (1.0 = 16m radius). Default: 3.0")
                 .defineInRange("maxVolume", 3.0, 0.1, 10.0);
+
+        CASSETTE_BROADCAST_AUDIO = BUILDER
+                .comment("If true, cassette audio data is sent to all online players regardless of distance. If false (default), only sent to players tracking the chunk (within view distance).")
+                .define("cassetteBroadcastAudio", false);
 
         BUILDER.pop();
         SPEC = BUILDER.build();

@@ -48,14 +48,16 @@ public class CassetteAudioManager {
         }
 
         if (sound == null) {
-            // First chunk of a new playback: push data BEFORE play(), so SoundEngine
+            // First chunk: push data BEFORE calling play(), so SoundEngine
             // finds audio in the buffer on its first read().
             sound = new CassetteSound(CASSETTE_STREAM, Vec3.atCenterOf(pos), volume);
             sound.stream.push(audio);
             sounds.put(key, sound);
-            soundManager.play(sound);
+            Minecraft.getInstance().getSoundManager().play(sound);
         } else {
             // Subsequent chunks: push and wake SoundEngine if needed.
+            // Also sync volume so mid-playback changes take effect.
+            sound.setVolume(volume);
             var stream = sound.stream;
             boolean wasEmpty = stream.isEmpty();
             stream.push(audio);
