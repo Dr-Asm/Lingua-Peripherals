@@ -12,7 +12,7 @@ The tape's color is stored in its `minecraft:dyed_color` component. The colored 
 
 ## Data Storage
 
-- Tapes store up to 256 KB of data (configurable via `cassetteTapeSizeLimit`)
+- Tapes store up to 1 MB of data (configurable via `cassetteTapeSizeLimit`)
 - Each tape gets a unique numeric ID on first insertion into a cassette drive
 - The ID appears in the advanced tooltip (F3+H)
 - Data persists in the world save directory under `computercraft/cassette_tape/`

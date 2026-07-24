@@ -12,15 +12,24 @@
 
 | 方块 | 说明 |
 |------|------|
-| [讲述者 (Narrator)](doc_cn/narrator.md) | 使用 Minecraft Narrator 的文本转语音方块 |
-| [创造讲述者 (Creative Narrator)](doc_cn/creative_narrator.md) | 无法破坏的版本，含全局广播功能 |
-| [磁带机 (Cassette Drive)](doc_cn/cassette_drive.md) | 单槽驱动器，支持数据读写和 DFPWM 音频播放 |
+| [讲述者 (Narrator)](doc_cn/narrator.md) | 使用 Minecraft Narrator 的文本转语音方块，完整支持 CC Speaker 方法 (playNote/playSound/playAudio/stop) |
+| [创造讲述者 (Creative Narrator)](doc_cn/creative_narrator.md) | 无法破坏的版本，含全局广播和完整 Speaker 功能 |
+| [磁带机 (Cassette Drive)](doc_cn/cassette_drive.md) | 单槽驱动器，支持数据读写、DFPWM 音频播放，自带 `cassette` 内置命令 |
 
 ## 物品
 
 | 物品 | 说明 |
 |------|------|
-| [磁带 (Cassette Tape)](doc_cn/cassette_tape.md) | 可染色磁带（16 色），可存储最多 256 KB 数据或 DFPWM 音频 |
+| [磁带 (Cassette Tape)](doc_cn/cassette_tape.md) | 可染色磁带（16 色），可存储最多 1 MB 数据或 DFPWM 音频 |
+
+## Turtle 升级
+
+将讲述者或创造讲述者装备到 Turtle 的左手/右手栏位，即可作为 Turtle 升级使用。
+
+| 升级 | 外设类型 | 说明 |
+|------|---------|------|
+| 讲述者 | `narrator` | Turtle 上使用完整讲述者 + Speaker 功能 |
+| 创造讲述者 | `creative_narrator` | Turtle 上使用完整创造讲述者 + globalVoice |
 
 ## 显示外设
 

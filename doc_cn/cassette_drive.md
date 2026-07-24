@@ -91,8 +91,34 @@ print("播放完成: " .. side)
 
 - 磁带以单文件形式存储于 `computercraft/cassette_tape/<id>/data.bin`
 - 首次插入时自动分配唯一 ID（记录在 `computercraft/ids.json` 中）
-- 大小上限可通过 `cassetteTapeSizeLimit` 配置（默认 256 KB）
+- 大小上限可通过 `cassetteTapeSizeLimit` 配置（默认 1 MB）
 - 数据随世界存档持久保存
+
+## 内置程序
+
+模组自带 `cassette` 命令，在**所有** CC 电脑上均可直接使用（不需要磁带机——无磁碟机时会优雅报错退出）：
+
+| 命令 | 说明 |
+|------|------|
+| `cassette play` | 开始/恢复播放 |
+| `cassette pause` | 暂停播放 |
+| `cassette stop` | 停止播放并重置位置 |
+| `cassette label` | 显示当前磁带标签 |
+| `cassette label <文字>` | 设置或清除磁带标签 |
+| `cassette volume` | 显示当前音量 |
+| `cassette volume <0-3>` | 设置音量 |
+| `cassette write <文件>` | 将 CC 电脑中的文件写入磁带 |
+| `cassette wget <url>` | 从 URL 下载文件到磁带（先通过 HTTP HEAD 检查大小） |
+
+### 示例
+
+```
+cassette play
+cassette volume 2.0
+cassette label My Mixtape
+cassette write disk/audio.dfpwm
+cassette wget https://example.com/sound.dfpwm
+```
 
 ## 合成表
 

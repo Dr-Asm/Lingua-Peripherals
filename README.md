@@ -12,15 +12,24 @@ An addon mod for [CC: Tweaked](https://github.com/cc-tweaked/CC-Tweaked) that ad
 
 | Block | Description |
 |-------|-------------|
-| [Narrator](doc/narrator.md) | Text-to-speech block using Minecraft Narrator system |
-| [Creative Narrator](doc/creative_narrator.md) | Indestructible version with global broadcast |
-| [Cassette Drive](doc/cassette_drive.md) | Single-slot drive with data read/write and DFPWM audio playback |
+| [Narrator](doc/narrator.md) | Text-to-speech block using Minecraft Narrator system. Full CC Speaker support (playNote/playSound/playAudio/stop) |
+| [Creative Narrator](doc/creative_narrator.md) | Indestructible version with global broadcast and full Speaker support |
+| [Cassette Drive](doc/cassette_drive.md) | Single-slot drive with data read/write, DFPWM audio playback, and built-in `cassette` command |
 
 ## Items
 
 | Item | Description |
 |------|-------------|
-| [Cassette Tape](doc/cassette_tape.md) | Colorable tape item (16 colors), stores up to 256 KB of data or DFPWM audio |
+| [Cassette Tape](doc/cassette_tape.md) | Colorable tape item (16 colors), stores up to 1 MB of data or DFPWM audio |
+
+## Turtle Upgrades
+
+Equip a Narrator or Creative Narrator onto a Turtle to use it as an upgrade.
+
+| Upgrade | Peripheral Type | Description |
+|---------|----------------|-------------|
+| Narrator | `narrator` | Full Narrator + Speaker functionality on a Turtle |
+| Creative Narrator | `creative_narrator` | Full Creative Narrator + globalVoice on a Turtle |
 
 ## Display Peripherals
 

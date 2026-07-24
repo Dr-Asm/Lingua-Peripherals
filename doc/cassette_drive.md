@@ -91,8 +91,34 @@ print("Playback finished: " .. side)
 
 - Tapes store a single binary file per ID under `computercraft/cassette_tape/<id>/data.bin`
 - Each tape receives a unique ID on first insertion (stored in `computercraft/ids.json`)
-- Size limit is configurable via `cassetteTapeSizeLimit` (default: 256 KB)
+- Size limit is configurable via `cassetteTapeSizeLimit` (default: 1 MB)
 - Data persists across world saves
+
+## Built-in Program
+
+The mod ships a `cassette` command available on **all** CC computers (no peripheral required — gracefully exits if no drive is found):
+
+| Command | Description |
+|---------|-------------|
+| `cassette play` | Start / resume tape playback |
+| `cassette pause` | Pause playback |
+| `cassette stop` | Stop playback and reset position |
+| `cassette label` | Show current tape label |
+| `cassette label <text>` | Set or clear tape label |
+| `cassette volume` | Show current volume |
+| `cassette volume <0-3>` | Set volume |
+| `cassette write <file>` | Write a local file from the CC computer to the tape |
+| `cassette wget <url>` | Download a URL to the tape (checks file size via HTTP HEAD first) |
+
+### Examples
+
+```
+cassette play
+cassette volume 2.0
+cassette label My Mixtape
+cassette write disk/audio.dfpwm
+cassette wget https://example.com/sound.dfpwm
+```
 
 ## Crafting
 

@@ -12,7 +12,7 @@
 
 ## 数据存储
 
-- 磁带最多可存储 256 KB 数据（可通过 `cassetteTapeSizeLimit` 配置）
+- 磁带最多可存储 1 MB 数据（可通过 `cassetteTapeSizeLimit` 配置）
 - 首次插入磁带机时自动分配唯一数字 ID
 - ID 可在高级提示框（F3+H）中查看
 - 数据持久保存在世界存档目录下的 `computercraft/cassette_tape/` 中
