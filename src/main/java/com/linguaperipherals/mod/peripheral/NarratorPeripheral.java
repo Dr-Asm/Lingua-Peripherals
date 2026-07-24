@@ -12,6 +12,7 @@ import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import com.linguaperipherals.mod.util.TextUtils;
@@ -34,9 +35,32 @@ public class NarratorPeripheral implements IPeripheral {
     protected final NarratorBlockEntity blockEntity;
     protected final List<IComputerAccess> attachedComputers = new CopyOnWriteArrayList<>();
 
+    /** Block-based constructor (existing). */
     public NarratorPeripheral(NarratorBlockEntity blockEntity) {
         this.blockEntity = blockEntity;
     }
+
+    // ---- Overridable position hooks (for turtle upgrades) ----
+
+    /** The level this peripheral is in. Override for turtle upgrades. */
+    @Nullable
+    protected Level getLevel() {
+        return blockEntity != null ? blockEntity.getWorld() : null;
+    }
+
+    /** The block position this peripheral is at. Override for turtle upgrades. */
+    protected BlockPos getPos() {
+        return blockEntity != null ? blockEntity.getBlockPos() : BlockPos.ZERO;
+    }
+
+    /** Convenience: cast level to ServerLevel. */
+    @Nullable
+    protected ServerLevel getServerLevel() {
+        var level = getLevel();
+        return level instanceof ServerLevel sl && !level.isClientSide ? sl : null;
+    }
+
+    // ---- IPeripheral ----
 
     @Override
     public String getType() {
@@ -57,7 +81,7 @@ public class NarratorPeripheral implements IPeripheral {
     public boolean equals(@Nullable IPeripheral other) {
         if (this == other) return true;
         if (!(other instanceof NarratorPeripheral that)) return false;
-        return blockEntity.getBlockPos().equals(that.blockEntity.getBlockPos());
+        return getPos().equals(that.getPos());
     }
 
     @LuaFunction
@@ -70,12 +94,12 @@ public class NarratorPeripheral implements IPeripheral {
 
         String decodedText = TextUtils.decodeEscapeSequences(text);
 
-        if (blockEntity.getWorld() == null || blockEntity.getWorld().isClientSide) return false;
+        ServerLevel serverLevel = getServerLevel();
+        if (serverLevel == null) return false;
 
-        BlockPos pos = blockEntity.getBlockPos();
+        BlockPos pos = getPos();
         Vec3 center = Vec3.atCenterOf(pos);
 
-        ServerLevel serverLevel = (ServerLevel) blockEntity.getWorld();
         SpeakTextPayload payload = SpeakTextPayload.of(decodedText);
         ClientboundCustomPayloadPacket packet = new ClientboundCustomPayloadPacket(payload);
 
@@ -106,6 +130,4 @@ public class NarratorPeripheral implements IPeripheral {
         if (player.level() != sourceLevel) return false;
         return player.distanceToSqr(sourcePos) <= rad * rad;
     }
-
-
 }

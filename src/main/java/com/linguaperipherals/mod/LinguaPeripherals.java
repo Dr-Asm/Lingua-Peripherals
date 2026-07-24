@@ -6,6 +6,7 @@ import com.linguaperipherals.mod.init.ModBlocks;
 import com.linguaperipherals.mod.init.ModCreativeTabs;
 import com.linguaperipherals.mod.init.ModMenuTypes;
 import com.linguaperipherals.mod.init.ModRecipeSerializers;
+import com.linguaperipherals.mod.init.ModTurtleUpgrades;
 import com.linguaperipherals.mod.init.PeripheralRegistration;
 import com.linguaperipherals.mod.init.VanillaDisplayPeripherals;
 import com.linguaperipherals.mod.network.LinguaPeripheralsNetwork;
@@ -33,6 +34,7 @@ public class LinguaPeripherals {
         modContainer.registerConfig(ModConfig.Type.COMMON, LinguaPeripheralsConfig.SPEC, "lingua_peripherals.conf");
 
         PeripheralRegistration.register(modEventBus);
+        ModTurtleUpgrades.register(modEventBus);
         LinguaPeripheralsNetwork.register(modEventBus);
 
         VanillaDisplayPeripherals.register(modEventBus);

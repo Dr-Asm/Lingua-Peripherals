@@ -4,5 +4,7 @@
   "block.linguaperipherals.cassette_drive": "Cassette Drive",
   "item.linguaperipherals.cassette_tape": "Cassette Tape",
   "itemGroup.linguaperipherals": "Lingua Peripherals",
-  "tooltip.linguaperipherals.cassette_id": "Cassette ID: %s"
+  "tooltip.linguaperipherals.cassette_id": "Cassette ID: %s",
+  "upgrade.linguaperipherals.narrator.adjective": "Narrator",
+  "upgrade.linguaperipherals.creative_narrator.adjective": "Creative Narrator"
 }

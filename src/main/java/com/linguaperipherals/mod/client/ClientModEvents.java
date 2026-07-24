@@ -6,8 +6,12 @@ import com.linguaperipherals.mod.client.audio.CassetteSound;
 import com.linguaperipherals.mod.client.screen.CassetteDriveScreen;
 import com.linguaperipherals.mod.init.ModBlocks;
 import com.linguaperipherals.mod.init.ModMenuTypes;
+import com.linguaperipherals.mod.init.ModTurtleUpgrades;
 import com.linguaperipherals.mod.item.CassetteTapeItem;
+import dan200.computercraft.api.client.turtle.RegisterTurtleModellersEvent;
+import dan200.computercraft.api.client.turtle.TurtleUpgradeModeller;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.component.DyedItemColor;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -45,5 +49,19 @@ public class ClientModEvents {
         if (!(event.getSound() instanceof CassetteSound sound)) return;
         CassetteAudioManager.onPlayStreaming(
                 event.getEngine(), event.getChannel(), sound.stream);
+    }
+
+    /** Register turtle upgrade models so the narrator renders correctly on turtles. */
+    @SubscribeEvent
+    static void registerTurtleModellers(RegisterTurtleModellersEvent event) {
+        var narratorLeft  = ResourceLocation.fromNamespaceAndPath(LinguaPeripherals.MODID, "block/turtle_narrator_left");
+        var narratorRight = ResourceLocation.fromNamespaceAndPath(LinguaPeripherals.MODID, "block/turtle_narrator_right");
+        event.register(ModTurtleUpgrades.NARRATOR.get(),
+                TurtleUpgradeModeller.sided(narratorLeft, narratorRight));
+
+        var creativeLeft  = ResourceLocation.fromNamespaceAndPath(LinguaPeripherals.MODID, "block/turtle_creative_narrator_left");
+        var creativeRight = ResourceLocation.fromNamespaceAndPath(LinguaPeripherals.MODID, "block/turtle_creative_narrator_right");
+        event.register(ModTurtleUpgrades.CREATIVE_NARRATOR.get(),
+                TurtleUpgradeModeller.sided(creativeLeft, creativeRight));
     }
 }

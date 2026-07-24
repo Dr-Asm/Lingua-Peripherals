@@ -4,5 +4,7 @@
   "block.linguaperipherals.cassette_drive": "磁带机",
   "item.linguaperipherals.cassette_tape": "磁带",
   "itemGroup.linguaperipherals": "语言外设",
-  "tooltip.linguaperipherals.cassette_id": "磁带ID: %s"
+  "tooltip.linguaperipherals.cassette_id": "磁带ID: %s",
+  "upgrade.linguaperipherals.narrator.adjective": "讲述者",
+  "upgrade.linguaperipherals.creative_narrator.adjective": "创造讲述者"
 }
