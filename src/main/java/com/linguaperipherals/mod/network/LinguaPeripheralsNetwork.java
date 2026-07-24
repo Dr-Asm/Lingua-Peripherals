@@ -24,6 +24,11 @@ public class LinguaPeripheralsNetwork {
                 (payload, context) -> ClientPayloadHandler.handleCassetteAudio(payload, context)
         );
         registrar.playToClient(
+                CassetteVolumePayload.TYPE,
+                CassetteVolumePayload.CODEC,
+                (payload, context) -> ClientPayloadHandler.handleCassetteVolume(payload, context)
+        );
+        registrar.playToClient(
                 CassetteAudioStopPayload.TYPE,
                 CassetteAudioStopPayload.CODEC,
                 (payload, context) -> ClientPayloadHandler.handleCassetteAudioStop(payload, context)

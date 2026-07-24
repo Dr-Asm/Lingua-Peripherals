@@ -92,4 +92,12 @@ public class CassetteAudioManager {
     public static CassetteSound getSound(BlockPos pos) {
         return sounds.get(pos.asLong());
     }
+
+    /** Update volume for an already-playing sound without sending audio data. */
+    public static void updateVolume(BlockPos pos, float volume) {
+        var sound = sounds.get(pos.asLong());
+        if (sound != null) {
+            sound.setVolume(volume);
+        }
+    }
 }

@@ -59,5 +59,11 @@ public class CassetteSound extends AbstractSoundInstance implements TickableSoun
     /** Update volume mid-playback. Called by CassetteAudioManager when new chunks arrive. */
     public void setVolume(float volume) {
         this.volume = volume;
+        // For LINEAR attenuation, the audible range = max(volume, 1.0) * 16.0.
+        // The SoundEngine sets the channel's linearAttenuation once when the sound starts.
+        // When volume changes mid-playback, we must manually update the channel's range.
+        if (stream.channel != null && !stream.channel.stopped()) {
+            stream.channel.linearAttenuation(Math.max(volume, 1.0f) * 16.0f);
+        }
     }
 }

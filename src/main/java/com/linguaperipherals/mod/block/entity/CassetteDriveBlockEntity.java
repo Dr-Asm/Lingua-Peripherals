@@ -7,6 +7,7 @@ import com.linguaperipherals.mod.init.ModBlockEntities;
 import com.linguaperipherals.mod.inventory.CassetteDriveMenu;
 import com.linguaperipherals.mod.item.CassetteTapeItem;
 import com.linguaperipherals.mod.network.CassetteAudioPayload;
+import com.linguaperipherals.mod.network.CassetteVolumePayload;
 import com.linguaperipherals.mod.network.CassetteAudioStopPayload;
 import com.linguaperipherals.mod.peripheral.CassetteDrivePeripheral;
 import com.linguaperipherals.mod.peripheral.CassetteTapeFileHandle;
@@ -186,6 +187,14 @@ public class CassetteDriveBlockEntity extends BlockEntity implements MenuProvide
 
     public void setVolume(float vol) {
         audioVolume = Math.max(0.0f, Math.min(vol, LinguaPeripheralsConfig.MAX_VOLUME.get().floatValue()));
+        // If currently playing, push volume update to all clients
+        if (playState == PlayState.PLAYING && level instanceof ServerLevel sl) {
+            var payload = new CassetteVolumePayload(worldPosition.asLong(), audioVolume);
+            var packet = new ClientboundCustomPayloadPacket(payload);
+            for (var player : sl.getServer().getPlayerList().getPlayers()) {
+                player.connection.send(packet);
+            }
+        }
         setChanged();
     }
 
