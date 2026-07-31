@@ -1,6 +1,6 @@
 package com.linguaperipherals.mod.peripheral;
 
-import com.linguaperipherals.mod.util.TextUtils;
+import com.linguaperipherals.mod.util.LinguaUtility;
 import dan200.computercraft.api.lua.LuaException;
 import dan200.computercraft.api.lua.LuaFunction;
 import dan200.computercraft.api.peripheral.IComputerAccess;
@@ -43,27 +43,27 @@ public class SignDisplayPeripheral implements IPeripheral {
     }
 
     @LuaFunction(mainThread = true)
-    public final List<String> readText() {
+    public final List<byte[]> readText() {
         SignText text = sign.getText(true);
-        List<String> result = new ArrayList<>();
+        List<byte[]> result = new ArrayList<>();
         for (int i = 0; i < 4; i++) {
             Component msg = text.getMessage(i, true);
-            result.add(msg != null ? TextUtils.encodeNonAscii(msg.getString()) : "");
+            result.add(msg != null ? LinguaUtility.toLuaBytes(msg.getString()) : new byte[0]);
         }
         return result;
     }
 
     @LuaFunction(mainThread = true)
-    public final String readLine(int line) throws LuaException {
+    public final byte[] readLine(int line) throws LuaException {
         if (line < 1 || line > 4) throw new LuaException("line out of range (1..4)");
         Component msg = sign.getText(true).getMessage(line - 1, true);
-        return msg != null ? TextUtils.encodeNonAscii(msg.getString()) : "";
+        return msg != null ? LinguaUtility.toLuaBytes(msg.getString()) : new byte[0];
     }
 
     @LuaFunction(mainThread = true)
     public final void writeLine(int line, String text) throws LuaException {
         if (line < 1 || line > 4) throw new LuaException("line out of range (1..4)");
-        String decoded = validateLength(TextUtils.decodeEscapeSequences(text));
+        String decoded = validateLength(LinguaUtility.fixLuaString(text));
         if (decoded.length() > MAX_TEXT_LENGTH) decoded = decoded.substring(0, MAX_TEXT_LENGTH);
         SignText cur = sign.getText(true);
         sign.setText(cur.setMessage(line - 1, Component.literal(decoded)), true);

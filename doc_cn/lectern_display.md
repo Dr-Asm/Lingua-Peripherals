@@ -9,6 +9,17 @@
 - **写入限制：** 仅书与笔（可写书），已签名的成书只能读取
 - **文本上限：** 每次写入 2000 字符
 
+## Unicode 支持
+
+所有读取方法返回原始 UTF-8 字节的 Lua 字符串。写入方法直接支持 Lua `\u{XXXX}` 转义。
+
+```lua
+local l = peripheral.find("lectern_display")
+l.writePage(1, '\u{4F60}\u{597D}')           -- 写入中文
+local text = l.readPage(1)                     -- 返回 UTF-8 字节
+l.writePage(2, text)                           -- 读写闭环
+```
+
 ## 外设方法
 
 ### getItem()
@@ -24,30 +35,18 @@
 设置当前页码（从 1 开始）。可设置任意页码，实际页面在 writePage 时创建。
 
 ### readPage(page)
-读取指定页的全部文本。非 ASCII 字符自动转为 `\uXXXX` 转义格式。
+读取指定页的全部文本。返回原始 UTF-8 字节的 Lua 字符串。
 
 ```lua
 local text = l.readPage(1)
-print(text)  -- "Line one\nLine two"
 ```
 
 ### writePage(page, text)
-在指定页写入文本（清空原有文本）。文本中的 `\n` 将作为换行符处理。支持 `\uXXXX` Unicode 转义。
+在指定页写入文本（清空原有文本）。文本中的 `\n` 将作为换行符处理。支持 Lua `\u{XXXX}` 转义。
 若页码超出当前范围，自动创建中间空白页。
 
-```lua
-l.writePage(1, "=== Server Log ===\\nDate: 2026-06-19\\nStatus: Online")
-```
-
-### clearPage(page)
-清空指定页。
-
-### delPage(page)
-
-删除指定页。后续页面自动前移。若删除最后一页，页数减少但保留至少一个空白页。
-
-### clear()
-清空所有页（重置为空白第一页）。
+### clearPage(page) / delPage(page) / clear()
+清空/删除/重置页。
 
 ## 完整示例
 
@@ -55,13 +54,9 @@ l.writePage(1, "=== Server Log ===\\nDate: 2026-06-19\\nStatus: Online")
 local l = peripheral.find("lectern_display")
 if not l then error("Place computer next to a Lectern with Book & Quill") end
 
--- 写入第 1 页
-l.writePage(1, "=== Server Log ===\\nDate: 2026-06-19\\nStatus: Online\\nPlayers: 5/20")
+l.writePage(1, "=== Server Log ===\nDate: 2026-06-19\nStatus: Online\nPlayers: 5/20")
+l.writePage(2, "=== Player List ===\n1. Steve\n2. Alex")
 
--- 写入第 2 页
-l.writePage(2, "=== Player List ===\\n1. Steve\\n2. Alex")
-
--- 读取
 local text = l.readPage(1)
 print(text)
 ```

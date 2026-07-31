@@ -3,7 +3,7 @@ package com.linguaperipherals.mod.peripheral;
 import com.linguaperipherals.mod.block.entity.NarratorBlockEntity;
 import com.linguaperipherals.mod.config.LinguaPeripheralsConfig;
 import com.linguaperipherals.mod.network.SpeakTextPayload;
-import com.linguaperipherals.mod.util.TextUtils;
+import com.linguaperipherals.mod.util.LinguaUtility;
 import dan200.computercraft.api.lua.LuaException;
 import dan200.computercraft.api.lua.LuaFunction;
 import dan200.computercraft.api.peripheral.IComputerAccess;
@@ -100,7 +100,7 @@ public class NarratorPeripheral extends SpeakerPeripheral {
         double maxRange = LinguaPeripheralsConfig.GLOBAL_MAX_RANGE.get();
         if (r > maxRange) r = maxRange;
 
-        String decodedText = TextUtils.decodeEscapeSequences(text);
+        String decodedText = LinguaUtility.fixLuaString(text);
 
         ServerLevel serverLevel = getLevel();
         if (serverLevel == null) return false;

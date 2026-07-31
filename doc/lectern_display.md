@@ -9,6 +9,15 @@ Place a CC: Tweaked computer adjacent to a lectern to read and write book conten
 - **Write limitation:** Book & Quill only; signed books are read-only
 - **Text limit:** 2000 chars per write call
 
+## Unicode Support
+
+```lua
+local l = peripheral.find("lectern_display")
+l.writePage(1, '\u{4F60}\u{597D}')           -- write Unicode
+local text = l.readPage(1)                     -- returns UTF-8 bytes
+l.writePage(2, text)                           -- round-trip works
+```
+
 ## Peripheral Methods
 
 ### getItem()
@@ -21,26 +30,19 @@ Returns total number of pages.
 Get or set the current page (1-indexed). Can set any page number; pages are created on write.
 
 ### readPage(page)
-Reads a specific page. Non-ASCII characters are encoded as `\uXXXX`.
+Reads a specific page. Returns raw UTF-8 bytes as a Lua string.
 
 ### writePage(page, text)
-Writes text to a specific page (replaces existing content). Use `\n` for line breaks. Supports `\uXXXX` escapes. Creates intermediate pages if needed.
+Writes text to a specific page (replaces existing content). Use `\n` for line breaks. Supports Lua `\u{XXXX}` escapes. Creates intermediate pages if needed.
 
-### clearPage(page)
-Clears a specific page.
-
-### delPage(page)
-
-Deletes the specified page. Subsequent pages shift forward. If the deleted page was the last, the page count decreases. The final page is never fully empty (a blank page is kept).
-
-### clear()
-Resets to a single blank page.
+### clearPage(page) / delPage(page) / clear()
+See Chinese docs for details.
 
 ## Example
 
 ```lua
 local l = peripheral.find("lectern_display")
-l.writePage(1, "=== Server Log ===\\nStatus: Online\\nPlayers: 5/20")
-l.writePage(2, "=== Player List ===\\n1. Steve\\n2. Alex")
+l.writePage(1, "=== Server Log ===\nStatus: Online\nPlayers: 5/20")
+l.writePage(2, "=== Player List ===\n1. Steve\n2. Alex")
 print(l.readPage(1))
 ```
