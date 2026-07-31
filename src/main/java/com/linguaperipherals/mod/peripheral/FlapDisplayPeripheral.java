@@ -11,7 +11,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
-import com.linguaperipherals.mod.util.TextUtils;
+import com.linguaperipherals.mod.util.LinguaUtility;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,29 +63,29 @@ public class FlapDisplayPeripheral implements IPeripheral {
         return ctrl != null && ctrl.isSpeedRequirementFulfilled();
     }
 
-    // ==================== Read (encoded for CC) ====================
+    // ==================== Read ====================
 
     @LuaFunction(mainThread = true)
-    public final List<String> getText() {
+    public final List<byte[]> getText() {
         FlapDisplayBlockEntity ctrl = getController();
         if (ctrl == null) return List.of();
         List<FlapDisplayLayout> lines = ctrl.getLines();
-        List<String> result = new ArrayList<>(lines.size());
+        List<byte[]> result = new ArrayList<>(lines.size());
         for (FlapDisplayLayout layout : lines) {
             StringBuilder sb = new StringBuilder();
             for (FlapDisplaySection sec : layout.getSections()) {
                 Component comp = sec.getText();
                 if (comp != null) sb.append(comp.getString());
             }
-            result.add(TextUtils.encodeNonAscii(sb.toString()));
+            result.add(LinguaUtility.toLuaBytes(sb.toString()));
         }
         return result;
     }
 
     @LuaFunction(mainThread = true)
-    public final String getLine(int line) throws LuaException {
+    public final byte[] getLine(int line) throws LuaException {
         FlapDisplayBlockEntity ctrl = getController();
-        if (ctrl == null) return "";
+        if (ctrl == null) return new byte[0];
         int index = line - 1;
         List<FlapDisplayLayout> ctrlLines = ctrl.getLines();
         if (index < 0 || index >= ctrlLines.size())
@@ -95,7 +95,7 @@ public class FlapDisplayPeripheral implements IPeripheral {
             Component comp = sec.getText();
             if (comp != null) sb.append(comp.getString());
         }
-        return TextUtils.encodeNonAscii(sb.toString());
+        return LinguaUtility.toLuaBytes(sb.toString());
     }
 
     // ==================== Cursor ====================
@@ -116,7 +116,7 @@ public class FlapDisplayPeripheral implements IPeripheral {
 
     @LuaFunction(mainThread = true)
     public final void write(String text) throws LuaException {
-        String decoded = validateLength(TextUtils.decodeEscapeSequences(text));
+        String decoded = validateLength(LinguaUtility.fixLuaString(text));
         FlapDisplayBlockEntity ctrl = getController();
         if (ctrl == null) return;
         List<FlapDisplayLayout> lines = ctrl.getLines();
@@ -139,7 +139,7 @@ public class FlapDisplayPeripheral implements IPeripheral {
 
     @LuaFunction(mainThread = true)
     public final void writeLine(int line, String text) throws LuaException {
-        String decoded = validateLength(TextUtils.decodeEscapeSequences(text));
+        String decoded = validateLength(LinguaUtility.fixLuaString(text));
         FlapDisplayBlockEntity ctrl = getController();
         if (ctrl == null) return;
         int index = line - 1;

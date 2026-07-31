@@ -26,8 +26,8 @@ When a cassette tape is inserted, the drive provides the following Lua methods:
 |--------|---------|-------------|
 | `isTapePresent()` | `boolean` | Whether a cassette tape is inserted |
 | `getTapeID()` | `number` or `nil` | The unique ID of the inserted tape |
-| `getTapeLabel()` | `string` or `nil` | The label of the inserted tape |
-| `setTapeLabel(label)` | — | Sets or clears the tape label (reflected in item name) |
+| `getTapeLabel()` | `string` or `nil` | The label of the inserted tape (raw UTF-8 bytes) |
+| `setTapeLabel(label)` | — | Sets or clears the tape label (supports Lua `\u{XXXX}`). Pass no argument to clear |
 | `ejectTape()` | — | Ejects the tape from the front of the drive |
 | `dataSize()` | `number` | Current data file size in bytes |
 | `dataSizeLimit()` | `number` | Maximum data size limit in bytes (configurable) |

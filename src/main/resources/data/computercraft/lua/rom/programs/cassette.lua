@@ -69,8 +69,8 @@ local function cmdLabel(args)
 
     if #args == 0 then
         local result = Cd.getTapeLabel()
-        if result and result[1] then
-            print("Tape label: " .. result[1])
+        if result and #result > 0 then
+            print("Tape label: " .. result)
         else
             print("Tape has no label.")
         end

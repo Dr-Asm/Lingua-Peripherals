@@ -41,9 +41,24 @@
 | [告示牌](doc_cn/sign_display.md) `sign_display` | 原版告示牌 | 读写告示牌文本 |
 | [讲台](doc_cn/lectern_display.md) `lectern_display` | 原版讲台 | 按页控制书本内容（需书与笔） |
 
-## 中文支持
+## Unicode / 中文支持
 
-使用 Unicode 转义序列输入中文。在线转换工具：[unicode-converter.soe-hentai.win](https://unicode-converter.soe-hentai.win/)
+所有外设原生支持 Unicode。直接在代码中使用 Lua 的 `\u{XXXX}` 转义序列：
+
+```lua
+local n = peripheral.find("narrator")
+n.playVoice('\u{4F60}\u{597D}')  -- 你好
+n.playVoice('\u{4E16}\u{754C}!')  -- 世界！
+
+local s = peripheral.find("sign_display")
+s.writeLine(1, '\u{4F60}\u{597D}')
+
+local text = s.readLine(1)  -- 返回原始 UTF-8 字节的 Lua 字符串
+print(#text)                 -- 6 (每个 Unicode 字符 3 字节)
+s.writeLine(2, text)         -- 读写闭环：读取的文本可直接写回
+```
+
+模组在边界处透明修正了 CC:Tweaked 的字节↔字符串转换，无需二次转义。
 
 ## 开发
 

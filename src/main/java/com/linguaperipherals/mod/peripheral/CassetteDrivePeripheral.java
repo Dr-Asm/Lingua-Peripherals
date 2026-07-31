@@ -2,6 +2,7 @@ package com.linguaperipherals.mod.peripheral;
 
 import com.linguaperipherals.mod.block.entity.CassetteDriveBlockEntity;
 import com.linguaperipherals.mod.item.CassetteTapeItem;
+import com.linguaperipherals.mod.util.LinguaUtility;
 import dan200.computercraft.api.lua.LuaException;
 import dan200.computercraft.api.lua.LuaFunction;
 import dan200.computercraft.api.lua.LuaTable;
@@ -59,11 +60,11 @@ public class CassetteDrivePeripheral implements IPeripheral {
     }
 
     @LuaFunction
-    public final @Nullable Object @Nullable [] getTapeLabel() {
+    public final @Nullable byte @Nullable [] getTapeLabel() {
         ItemStack stack = blockEntity.getStoredItem();
         if (!(stack.getItem() instanceof CassetteTapeItem)) return null;
         String label = CassetteTapeItem.getCassetteLabel(stack);
-        return label != null ? new Object[]{label} : null;
+        return label != null ? LinguaUtility.toLuaBytes(label) : null;
     }
 
     @LuaFunction(mainThread = true)
@@ -71,7 +72,8 @@ public class CassetteDrivePeripheral implements IPeripheral {
         ItemStack stack = blockEntity.getStoredItem();
         if (!(stack.getItem() instanceof CassetteTapeItem))
             throw new LuaException("No cassette tape in drive");
-        CassetteTapeItem.setCassetteLabel(stack, label.orElse(null));
+        CassetteTapeItem.setCassetteLabel(stack,
+                label.map(LinguaUtility::fixLuaString).orElse(null));
         blockEntity.setChanged();
     }
 

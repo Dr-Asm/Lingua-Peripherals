@@ -22,7 +22,7 @@ A block that plays text-to-speech using Minecraft's built-in Narrator system, co
 Plays the specified text as speech. Only players within the radius will hear it.
 
 **Parameters:**
-- `text` (string) — The text to speak. Use `\uXXXX` escapes for non-ASCII characters.
+- `text` (string) — The text to speak. Use Lua's `\u{XXXX}` escapes for non-ASCII.
 - `rad` (number, optional) — Maximum audible radius in blocks. Default: 16. Clamped to `globalMaxRange` (config, default 128).
 
 **Returns:** `true` if the voice was sent successfully.
@@ -34,7 +34,7 @@ Plays the specified text as speech. Only players within the radius will hear it.
 local n = peripheral.find("narrator")
 n.playVoice("Hello, world!")       -- radius 16
 n.playVoice("Welcome!", 64)         -- radius 64
-n.playVoice("\\u4f60\\u597d", 32)   -- Chinese text via escapes
+n.playVoice('\u{4F60}\u{597D}', 32) -- Unicode text
 ```
 
 ### Speaker Methods (inherited from CC Speaker)

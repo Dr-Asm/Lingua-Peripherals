@@ -22,7 +22,7 @@
 播报指定文本的语音，仅半径内的玩家能听到。
 
 **参数：**
-- `text` (string) — 需要朗读的文本。非 ASCII 字符使用 `\uXXXX` 转义。
+- `text` (string) — 需要朗读的文本。使用 Lua `\u{XXXX}` 转义。
 - `rad` (number, 可选) — 声音可传播的最大半径（格）。默认为 16。超出配置中的 `globalMaxRange`（默认 128）会被自动限制。
 
 **返回：** 发送成功返回 `true`
@@ -34,7 +34,7 @@
 local n = peripheral.find("narrator")
 n.playVoice("Hello, world!")           -- 半径 16 格
 n.playVoice("欢迎！", 64)               -- 半径 64 格
-n.playVoice("\\u4f60\\u597d", 32)       -- 中文转义
+n.playVoice('\u{4F60}\u{597D}', 32)     -- 中文文本
 ```
 
 ### Speaker 方法（继承自 CC Speaker）

@@ -7,36 +7,31 @@
 - **外设类型：** `flap_display`
 - **条件：** 仅在安装 Create mod 时可用
 - **文本上限：** 每次写入 500 字符
-- **读取编码：** 非 ASCII 字符自动转为 `\uXXXX` 转义格式
+
+## Unicode 支持
+
+读取方法返回原始 UTF-8 字节的 Lua 字符串。写入方法直接支持 Lua `\u{XXXX}` 转义。
+
+```lua
+local f = peripheral.find("flap_display")
+f.writeLine(1, '\u{4F60}\u{597D}')     -- 写入中文
+local text = f.getLine(1)                -- 返回 UTF-8 字节
+f.writeLine(2, text)                     -- 读写闭环
+```
 
 ## 外设方法
 
-### getSize()
-返回 `(maxCols, maxRows)` — 外接矩形尺寸（最大字符列数, 总行数）。
-
-### isRunning()
-返回翻牌显示器是否具有动能驱动。
-
-### getText()
-返回所有行的文本内容（table of strings）。非 ASCII 字符已转义编码。
-
-### getLine(line)
-返回指定行的文本（1-indexed）。非 ASCII 字符已转义编码。
-
-### write(text)
-在当前光标位置写入文本。支持 `\uXXXX` Unicode 转义。
-
-### writeLine(line, text) / setLine(line, text)
-直接设置指定行的完整文本。
-
-### setCursorPos(col, row) / getCursorPos()
-光标位置控制（均从 1 开始）。
-
-### clearLine(line) / clear()
-清空一行或全部行。
-
-### setColor(line, color)
-设置指定行的颜色。可用颜色：`white` `orange` `magenta` `light_blue` `yellow` `lime` `pink` `gray` `light_gray` `cyan` `purple` `blue` `brown` `green` `red` `black`
+| 方法 | 说明 |
+|------|------|
+| `getSize()` | 返回 `(maxCols, maxRows)` — 最大字符列数, 总行数 |
+| `isRunning()` | 是否有动能驱动 |
+| `getText()` | 全部行，返回原始 UTF-8 字节字符串 |
+| `getLine(line)` | 指定行（1-indexed），原始 UTF-8 字节 |
+| `write(text)` | 在光标位置写入文本 |
+| `writeLine(line, text)` / `setLine(line, text)` | 直接设置指定行 |
+| `setCursorPos(col, row)` / `getCursorPos()` | 光标位置（均从 1 开始） |
+| `clearLine(line)` / `clear()` | 清空一行/全部 |
+| `setColor(line, color)` | 16 色: `white` `orange` `magenta` `light_blue` `yellow` `lime` `pink` `gray` `light_gray` `cyan` `purple` `blue` `brown` `green` `red` `black` |
 
 ## 示例
 

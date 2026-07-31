@@ -26,8 +26,8 @@
 |------|--------|------|
 | `isTapePresent()` | `boolean` | 是否有磁带插入 |
 | `getTapeID()` | `number` 或 `nil` | 磁带的唯一 ID |
-| `getTapeLabel()` | `string` 或 `nil` | 磁带的标签 |
-| `setTapeLabel(label)` | — | 设置或清除标签（同步更新物品显示名） |
+| `getTapeLabel()` | `string` 或 `nil` | 磁带的标签（原始 UTF-8 字节） |
+| `setTapeLabel(label)` | — | 设置或清除标签（支持 Lua `\u{XXXX}`）。不传参则清除 |
 | `ejectTape()` | — | 从驱动器正面弹出磁带 |
 | `dataSize()` | `number` | 当前数据文件大小（字节） |
 | `dataSizeLimit()` | `number` | 数据文件大小上限（字节，可配置） |

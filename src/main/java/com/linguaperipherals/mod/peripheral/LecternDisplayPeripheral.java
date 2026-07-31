@@ -1,6 +1,6 @@
 package com.linguaperipherals.mod.peripheral;
 
-import com.linguaperipherals.mod.util.TextUtils;
+import com.linguaperipherals.mod.util.LinguaUtility;
 import dan200.computercraft.api.lua.LuaException;
 import dan200.computercraft.api.lua.LuaFunction;
 import dan200.computercraft.api.peripheral.IComputerAccess;
@@ -67,21 +67,21 @@ public class LecternDisplayPeripheral implements IPeripheral {
     }
 
     @LuaFunction(mainThread = true)
-    public final String readPage(int page) throws LuaException {
+    public final byte[] readPage(int page) throws LuaException {
         if (page < 1) throw new LuaException("page must be >= 1");
         ItemStack book = lectern.getBook();
-        if (book.isEmpty()) return "";
+        if (book.isEmpty()) return new byte[0];
         WritableBookContent c = book.get(DataComponents.WRITABLE_BOOK_CONTENT);
-        if (c == null) return "";
+        if (c == null) return new byte[0];
         int idx = page - 1;
-        if (idx >= c.pages().size()) return "";
-        return TextUtils.encodeNonAscii(c.pages().get(idx).get(true));
+        if (idx >= c.pages().size()) return new byte[0];
+        return LinguaUtility.toLuaBytes(c.pages().get(idx).get(true));
     }
 
     @LuaFunction(mainThread = true)
     public final void writePage(int page, String text) throws LuaException {
         if (page < 1) throw new LuaException("page must be >= 1");
-        String decoded = validateLength(TextUtils.decodeEscapeSequences(text));
+        String decoded = validateLength(LinguaUtility.fixLuaString(text));
         ItemStack book = lectern.getBook();
         if (book.isEmpty()) return;
         if (!book.is(Items.WRITABLE_BOOK)) return;

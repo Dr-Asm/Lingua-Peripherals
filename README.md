@@ -41,9 +41,24 @@ Place a computer adjacent to these existing blocks to use them as peripherals.
 | [Sign Display](doc/sign_display.md) `sign_display` | Vanilla Sign | Read and write sign text |
 | [Lectern Display](doc/lectern_display.md) `lectern_display` | Vanilla Lectern | Page-based book control (requires Book and Quill) |
 
-## Chinese Text Support
+## Unicode / Chinese Text Support
 
-Use Unicode escape sequences for Chinese text input. Online converter: [unicode-converter.soe-hentai.win](https://unicode-converter.soe-hentai.win/)
+All peripherals natively support Unicode. Use Lua's `\u{XXXX}` escape sequences directly in your code:
+
+```lua
+local n = peripheral.find("narrator")
+n.playVoice('\u{4F60}\u{597D}')  -- 你好 (no double-backslash needed)
+n.playVoice('\u{4E16}\u{754C}!')  -- 世界!
+
+local s = peripheral.find("sign_display")
+s.writeLine(1, '\u{4F60}\u{597D}')
+
+local text = s.readLine(1)  -- returns raw UTF-8 bytes as Lua string
+print(#text)                 -- 6 (3 bytes per Unicode character)
+s.writeLine(2, text)         -- round-trip: read → write works correctly
+```
+
+The mod transparently corrects CC:Tweaked's lossy byte↔string conversion at both boundaries.
 
 ## Development
 
