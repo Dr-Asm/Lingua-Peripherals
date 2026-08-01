@@ -14,6 +14,9 @@
 --
 -- Safety: wget checks Content-Length via HEAD before downloading,
 --         and refuses files exceeding the tape's remaining capacity.
+--
+-- Note: shell auto-completion for this program is registered at boot
+-- time by rom/autorun/cassette.lua (see that file for details).
 
 local Cd = peripheral.find("cassette_drive")
 if not Cd then
