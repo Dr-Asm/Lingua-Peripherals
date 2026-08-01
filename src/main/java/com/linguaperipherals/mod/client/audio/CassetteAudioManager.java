@@ -65,7 +65,7 @@ public class CassetteAudioManager {
                     && stream.executor != null
                     && !stream.channel.stopped()) {
                 stream.executor.execute(
-                        () -> AudioReflection.pumpBuffers(stream.channel, 1));
+                        () -> AudioReflection.pumpBuffers(stream.channel));
             }
         }
     }

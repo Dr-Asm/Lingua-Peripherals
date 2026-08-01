@@ -8,12 +8,13 @@ plugins {
 version = '2.0.0'
 group = 'com.linguaperipherals'
 
-base { archivesName = 'linguaperipherals' }
+base { archivesName = 'linguaperipherals-1.20.1-forge' }
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+java { sourceCompatibility = targetCompatibility = '17' }
 
 minecraft {
     mappings channel: 'official', version: '1.20.1'
+    accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
     runs {
         client {
             workingDirectory project.file('run')
@@ -36,10 +37,8 @@ repositories {
 }
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.20.1-47.3.0'
+    minecraft 'net.minecraftforge:forge:1.20.1-47.4.22'
     implementation fg.deobf("maven.modrinth:cc-tweaked:1.120.0")
-    // Create 0.5.1j — compileOnly; runtime Mixin refmap incompatible with available Forge builds
-    // FlapDisplay API unchanged in later Create versions — compiles and works in production
     compileOnly "maven.modrinth:create:1.20.1-0.5.1.j"
 }
 
