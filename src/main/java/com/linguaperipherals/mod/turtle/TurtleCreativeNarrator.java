@@ -6,10 +6,13 @@ import dan200.computercraft.api.turtle.AbstractTurtleUpgrade;
 import dan200.computercraft.api.turtle.ITurtleAccess;
 import dan200.computercraft.api.turtle.TurtleSide;
 import dan200.computercraft.api.turtle.TurtleUpgradeType;
-import dan200.computercraft.api.upgrades.UpgradeType;
+import dan200.computercraft.shared.peripheral.speaker.SpeakerPosition;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -25,8 +28,8 @@ public class TurtleCreativeNarrator extends AbstractTurtleUpgrade {
         }
 
         @Override
-        protected ServerLevel getLevel() {
-            return turtle.getLevel() instanceof ServerLevel sl ? sl : null;
+        public SpeakerPosition getPosition() {
+            return SpeakerPosition.of(turtle.getLevel(), Vec3.atCenterOf(turtle.getPosition()));
         }
 
         @Override
@@ -38,16 +41,8 @@ public class TurtleCreativeNarrator extends AbstractTurtleUpgrade {
         }
     }
 
-    private final UpgradeType<TurtleCreativeNarrator> type;
-
-    public TurtleCreativeNarrator(ItemStack item, UpgradeType<TurtleCreativeNarrator> type) {
-        super(TurtleUpgradeType.PERIPHERAL, "upgrade.linguaperipherals.creative_narrator.adjective", item);
-        this.type = type;
-    }
-
-    @Override
-    public UpgradeType<TurtleCreativeNarrator> getType() {
-        return type;
+    public TurtleCreativeNarrator(ResourceLocation id, ItemStack stack) {
+        super(id, TurtleUpgradeType.PERIPHERAL, stack);
     }
 
     @Override

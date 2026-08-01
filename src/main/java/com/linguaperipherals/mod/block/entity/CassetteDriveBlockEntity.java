@@ -6,9 +6,7 @@ import com.linguaperipherals.mod.config.LinguaPeripheralsConfig;
 import com.linguaperipherals.mod.init.ModBlockEntities;
 import com.linguaperipherals.mod.inventory.CassetteDriveMenu;
 import com.linguaperipherals.mod.item.CassetteTapeItem;
-import com.linguaperipherals.mod.network.CassetteAudioPayload;
-import com.linguaperipherals.mod.network.CassetteVolumePayload;
-import com.linguaperipherals.mod.network.CassetteAudioStopPayload;
+import com.linguaperipherals.mod.network.LinguaPeripheralsNetwork;
 import com.linguaperipherals.mod.peripheral.CassetteDrivePeripheral;
 import com.linguaperipherals.mod.peripheral.CassetteTapeFileHandle;
 import com.linguaperipherals.mod.peripheral.CassetteTapeStorage;
@@ -21,7 +19,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
+import net.minecraftforge.network.PacketDistributor;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
@@ -189,10 +187,9 @@ public class CassetteDriveBlockEntity extends BlockEntity implements MenuProvide
         audioVolume = Math.max(0.0f, Math.min(vol, LinguaPeripheralsConfig.MAX_VOLUME.get().floatValue()));
         // If currently playing, push volume update to all clients
         if (playState == PlayState.PLAYING && level instanceof ServerLevel sl) {
-            var payload = new CassetteVolumePayload(worldPosition.asLong(), audioVolume);
-            var packet = new ClientboundCustomPayloadPacket(payload);
+            var payload = new LinguaPeripheralsNetwork.CassetteVolumePacket(worldPosition, audioVolume);
             for (var player : sl.getServer().getPlayerList().getPlayers()) {
-                player.connection.send(packet);
+                LinguaPeripheralsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), payload);
             }
         }
         setChanged();
@@ -320,10 +317,9 @@ public class CassetteDriveBlockEntity extends BlockEntity implements MenuProvide
     }
 
     private void sendStopPayload(ServerLevel sl) {
-        var payload = new CassetteAudioStopPayload(worldPosition.asLong());
-        var packet = new ClientboundCustomPayloadPacket(payload);
+        var payload = new LinguaPeripheralsNetwork.CassetteAudioStopPacket(worldPosition);
         for (var player : sl.getServer().getPlayerList().getPlayers()) {
-            player.connection.send(packet);
+            LinguaPeripheralsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), payload);
         }
     }
 
@@ -457,12 +453,11 @@ public class CassetteDriveBlockEntity extends BlockEntity implements MenuProvide
         // Still have data to send: read one chunk per tick and broadcast
         var audio = playbackController.readNextChunk();
         if (audio != null) {
-            var payload = new CassetteAudioPayload(worldPosition.asLong(), audio, audioVolume);
-            var packet = new ClientboundCustomPayloadPacket(payload);
+            var payload = new LinguaPeripheralsNetwork.CassetteAudioPacket(worldPosition, audio, audioVolume);
             if (LinguaPeripheralsConfig.CASSETTE_BROADCAST_AUDIO.get()) {
                 // Broadcast to all online players regardless of distance
                 for (var player : sl.getServer().getPlayerList().getPlayers()) {
-                    player.connection.send(packet);
+                    LinguaPeripheralsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), payload);
                 }
             } else {
                 // Send only to players within audible range
@@ -471,7 +466,7 @@ public class CassetteDriveBlockEntity extends BlockEntity implements MenuProvide
                     if (player.distanceToSqr(
                             worldPosition.getX() + 0.5, worldPosition.getY() + 0.5,
                             worldPosition.getZ() + 0.5) <= range * range) {
-                        player.connection.send(packet);
+                        LinguaPeripheralsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), payload);
                     }
                 }
             }
@@ -482,17 +477,17 @@ public class CassetteDriveBlockEntity extends BlockEntity implements MenuProvide
     // ==================== NBT ====================
 
     @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
-        ContainerHelper.saveAllItems(tag, items, registries);
+    protected void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
+        ContainerHelper.saveAllItems(tag, items);
         tag.putLong("AudioOffset", audioOffset);
         tag.putFloat("AudioVolume", audioVolume);
     }
 
     @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
-        ContainerHelper.loadAllItems(tag, items, registries);
+    public void load(CompoundTag tag) {
+        super.load(tag);
+        ContainerHelper.loadAllItems(tag, items);
         audioOffset = tag.getLong("AudioOffset");
         audioVolume = tag.getFloat("AudioVolume");
         playState = PlayState.STOPPED;

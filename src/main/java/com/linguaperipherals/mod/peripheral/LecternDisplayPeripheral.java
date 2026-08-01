@@ -5,12 +5,12 @@ import dan200.computercraft.api.lua.LuaException;
 import dan200.computercraft.api.lua.LuaFunction;
 import dan200.computercraft.api.peripheral.IComputerAccess;
 import dan200.computercraft.api.peripheral.IPeripheral;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.server.network.Filterable;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.component.WritableBookContent;
 import net.minecraft.world.level.block.entity.LecternBlockEntity;
 import org.jetbrains.annotations.Nullable;
 
@@ -20,6 +20,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class LecternDisplayPeripheral implements IPeripheral {
     private static final int MAX_TEXT_LENGTH = 2000;
+    private static final String TAG_PAGES = "pages";
 
     private final LecternBlockEntity lectern;
     private final List<IComputerAccess> attachedComputers = new CopyOnWriteArrayList<>();
@@ -53,8 +54,7 @@ public class LecternDisplayPeripheral implements IPeripheral {
     public final int getPages() {
         ItemStack book = lectern.getBook();
         if (book.isEmpty()) return 0;
-        WritableBookContent c = book.get(DataComponents.WRITABLE_BOOK_CONTENT);
-        return c != null ? c.pages().size() : 0;
+        return getPageList(book).size();
     }
 
     @LuaFunction
@@ -71,11 +71,10 @@ public class LecternDisplayPeripheral implements IPeripheral {
         if (page < 1) throw new LuaException("page must be >= 1");
         ItemStack book = lectern.getBook();
         if (book.isEmpty()) return new byte[0];
-        WritableBookContent c = book.get(DataComponents.WRITABLE_BOOK_CONTENT);
-        if (c == null) return new byte[0];
+        ListTag pages = getPageList(book);
         int idx = page - 1;
-        if (idx >= c.pages().size()) return new byte[0];
-        return LinguaUtility.toLuaBytes(c.pages().get(idx).get(true));
+        if (idx >= pages.size()) return new byte[0];
+        return LinguaUtility.toLuaBytes(pages.getString(idx));
     }
 
     @LuaFunction(mainThread = true)
@@ -85,12 +84,10 @@ public class LecternDisplayPeripheral implements IPeripheral {
         ItemStack book = lectern.getBook();
         if (book.isEmpty()) return;
         if (!book.is(Items.WRITABLE_BOOK)) return;
-        WritableBookContent c = book.get(DataComponents.WRITABLE_BOOK_CONTENT);
-        if (c == null) return;
-        List<Filterable<String>> pages = new ArrayList<>(c.pages());
-        while (pages.size() < page) pages.add(Filterable.passThrough(""));
-        pages.set(page - 1, Filterable.passThrough(decoded));
-        book.set(DataComponents.WRITABLE_BOOK_CONTENT, new WritableBookContent(pages));
+        ListTag pages = getPageList(book);
+        while (pages.size() < page) pages.add(StringTag.valueOf(""));
+        pages.set(page - 1, StringTag.valueOf(decoded));
+        book.getOrCreateTag().put(TAG_PAGES, pages);
         lectern.setBook(book);
     }
 
@@ -100,11 +97,9 @@ public class LecternDisplayPeripheral implements IPeripheral {
         ItemStack book = lectern.getBook();
         if (book.isEmpty()) return;
         if (!book.is(Items.WRITABLE_BOOK)) return;
-        WritableBookContent c = book.get(DataComponents.WRITABLE_BOOK_CONTENT);
-        if (c == null) return;
-        List<Filterable<String>> pages = new ArrayList<>(c.pages());
-        if (page <= pages.size()) pages.set(page - 1, Filterable.passThrough(""));
-        book.set(DataComponents.WRITABLE_BOOK_CONTENT, new WritableBookContent(pages));
+        ListTag pages = getPageList(book);
+        if (page <= pages.size()) pages.set(page - 1, StringTag.valueOf(""));
+        book.getOrCreateTag().put(TAG_PAGES, pages);
         lectern.setBook(book);
     }
 
@@ -114,14 +109,12 @@ public class LecternDisplayPeripheral implements IPeripheral {
         ItemStack book = lectern.getBook();
         if (book.isEmpty()) return;
         if (!book.is(Items.WRITABLE_BOOK)) return;
-        WritableBookContent c = book.get(DataComponents.WRITABLE_BOOK_CONTENT);
-        if (c == null) return;
-        List<Filterable<String>> pages = new ArrayList<>(c.pages());
+        ListTag pages = getPageList(book);
         int idx = page - 1;
         if (idx >= pages.size()) return;
         pages.remove(idx);
-        if (pages.isEmpty()) pages.add(Filterable.passThrough(""));
-        book.set(DataComponents.WRITABLE_BOOK_CONTENT, new WritableBookContent(pages));
+        if (pages.isEmpty()) pages.add(StringTag.valueOf(""));
+        book.getOrCreateTag().put(TAG_PAGES, pages);
         lectern.setBook(book);
         if (currentPage >= pages.size()) currentPage = Math.max(0, pages.size() - 1);
     }
@@ -131,11 +124,17 @@ public class LecternDisplayPeripheral implements IPeripheral {
         ItemStack book = lectern.getBook();
         if (book.isEmpty()) return;
         if (!book.is(Items.WRITABLE_BOOK)) return;
-        List<Filterable<String>> pages = new ArrayList<>();
-        pages.add(Filterable.passThrough(""));
-        book.set(DataComponents.WRITABLE_BOOK_CONTENT, new WritableBookContent(pages));
+        ListTag pages = new ListTag();
+        pages.add(StringTag.valueOf(""));
+        book.getOrCreateTag().put(TAG_PAGES, pages);
         lectern.setBook(book);
         currentPage = 0;
+    }
+
+    private static ListTag getPageList(ItemStack book) {
+        if (book.getTag() == null) return new ListTag();
+        ListTag pages = book.getTag().getList(TAG_PAGES, Tag.TAG_STRING);
+        return pages != null ? pages : new ListTag();
     }
 
     private static String validateLength(String text) throws LuaException {

@@ -1,10 +1,10 @@
 package com.linguaperipherals.mod.block;
 
 import com.linguaperipherals.mod.block.entity.CassetteDriveBlockEntity;
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Player;
@@ -23,7 +23,6 @@ import org.jetbrains.annotations.Nullable;
 
 @SuppressWarnings("deprecation")
 public class CassetteDriveBlock extends HorizontalDirectionalBlock implements EntityBlock {
-    private static final MapCodec<CassetteDriveBlock> CODEC = simpleCodec(CassetteDriveBlock::new);
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
     public static final EnumProperty<CassetteState> CASSETTE_STATE =
             EnumProperty.create("cassette_state", CassetteState.class);
@@ -33,11 +32,6 @@ public class CassetteDriveBlock extends HorizontalDirectionalBlock implements En
         this.registerDefaultState(this.stateDefinition.any()
                 .setValue(FACING, Direction.NORTH)
                 .setValue(CASSETTE_STATE, CassetteState.EMPTY));
-    }
-
-    @Override
-    protected MapCodec<? extends HorizontalDirectionalBlock> codec() {
-        return CODEC;
     }
 
     @Override
@@ -64,7 +58,7 @@ public class CassetteDriveBlock extends HorizontalDirectionalBlock implements En
     }
 
     @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         if (!level.isClientSide) {
             MenuProvider provider = getMenuProvider(state, level, pos);
             if (provider != null) player.openMenu(provider);
@@ -90,7 +84,7 @@ public class CassetteDriveBlock extends HorizontalDirectionalBlock implements En
     }
 
     @Override
-    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean moved) {
+    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean moved) {
         if (!state.is(newState.getBlock())) {
             BlockEntity be = level.getBlockEntity(pos);
             if (be instanceof CassetteDriveBlockEntity drive) {
@@ -108,7 +102,7 @@ public class CassetteDriveBlock extends HorizontalDirectionalBlock implements En
      * On redstone pulse (rising edge from 0 to >0), start playback from beginning.
      */
     @Override
-    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighborBlock, BlockPos neighborPos, boolean moved) {
+    public void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighborBlock, BlockPos neighborPos, boolean moved) {
         if (!level.isClientSide) {
             BlockEntity be = level.getBlockEntity(pos);
             if (be instanceof CassetteDriveBlockEntity drive) {

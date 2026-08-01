@@ -4,31 +4,23 @@ import com.linguaperipherals.mod.LinguaPeripherals;
 import com.linguaperipherals.mod.block.entity.NarratorBlockEntity;
 import com.linguaperipherals.mod.block.entity.CreativeNarratorBlockEntity;
 import com.linguaperipherals.mod.block.entity.CassetteDriveBlockEntity;
-import dan200.computercraft.api.peripheral.PeripheralCapability;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
+import dan200.computercraft.api.ForgeComputerCraftAPI;
+import dan200.computercraft.api.peripheral.IPeripheral;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraftforge.common.util.LazyOptional;
 
 public class PeripheralRegistration {
 
-    public static void register(IEventBus modEventBus) {
-        modEventBus.addListener(PeripheralRegistration::onRegisterCapabilities);
-    }
-
-    private static void onRegisterCapabilities(RegisterCapabilitiesEvent event) {
-        event.registerBlockEntity(
-                PeripheralCapability.get(),
-                ModBlockEntities.NARRATOR_BE.get(),
-                (be, dir) -> be.getPeripheral()
-        );
-        event.registerBlockEntity(
-                PeripheralCapability.get(),
-                ModBlockEntities.CREATIVE_NARRATOR_BE.get(),
-                (be, dir) -> be.getPeripheral()
-        );
-        event.registerBlockEntity(
-                PeripheralCapability.get(),
-                ModBlockEntities.CASSETTE_DRIVE_BE.get(),
-                (be, dir) -> be.getPeripheral()
-        );
+    public static void register() {
+        ForgeComputerCraftAPI.registerPeripheralProvider((world, pos, side) -> {
+            BlockEntity be = world.getBlockEntity(pos);
+            if (be instanceof NarratorBlockEntity nbe)
+                return LazyOptional.of(nbe::getPeripheral);
+            if (be instanceof CreativeNarratorBlockEntity cnbe)
+                return LazyOptional.of(cnbe::getPeripheral);
+            if (be instanceof CassetteDriveBlockEntity cdbe)
+                return LazyOptional.of(cdbe::getPeripheral);
+            return LazyOptional.empty();
+        });
     }
 }

@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * 4. Subsequent chunks: push + pumpBuffers if channel is ready
  */
 public class CassetteAudioManager {
-    public static final ResourceLocation CASSETTE_STREAM = ResourceLocation.fromNamespaceAndPath(
+    public static final ResourceLocation CASSETTE_STREAM = new ResourceLocation(
             LinguaPeripherals.MODID, "cassette_drive.stream");
 
     private static final Map<Long, CassetteSound> sounds = new ConcurrentHashMap<>();

@@ -1,16 +1,16 @@
 package com.linguaperipherals.mod.config;
 
-import net.neoforged.neoforge.common.ModConfigSpec;
+import net.minecraftforge.common.ForgeConfigSpec;
 
 public class LinguaPeripheralsConfig {
-    public static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
-    public static final ModConfigSpec SPEC;
+    public static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
+    public static final ForgeConfigSpec SPEC;
 
-    public static final ModConfigSpec.DoubleValue GLOBAL_MAX_RANGE;
-    public static final ModConfigSpec.IntValue SPEECH_MAX_FREQUENCY;
-    public static final ModConfigSpec.IntValue CASSETTE_TAPE_SIZE_LIMIT;
-    public static final ModConfigSpec.DoubleValue MAX_VOLUME;
-    public static final ModConfigSpec.BooleanValue CASSETTE_BROADCAST_AUDIO;
+    public static final ForgeConfigSpec.DoubleValue GLOBAL_MAX_RANGE;
+    public static final ForgeConfigSpec.IntValue SPEECH_MAX_FREQUENCY;
+    public static final ForgeConfigSpec.IntValue CASSETTE_TAPE_SIZE_LIMIT;
+    public static final ForgeConfigSpec.DoubleValue MAX_VOLUME;
+    public static final ForgeConfigSpec.BooleanValue CASSETTE_BROADCAST_AUDIO;
 
     static {
         BUILDER.push("general");

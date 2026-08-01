@@ -2,7 +2,7 @@ package com.linguaperipherals.mod.peripheral;
 
 import com.linguaperipherals.mod.block.entity.NarratorBlockEntity;
 import com.linguaperipherals.mod.config.LinguaPeripheralsConfig;
-import com.linguaperipherals.mod.network.SpeakTextPayload;
+import com.linguaperipherals.mod.network.LinguaPeripheralsNetwork;
 import com.linguaperipherals.mod.util.LinguaUtility;
 import dan200.computercraft.api.lua.LuaException;
 import dan200.computercraft.api.lua.LuaFunction;
@@ -11,10 +11,11 @@ import dan200.computercraft.api.peripheral.IPeripheral;
 import dan200.computercraft.shared.peripheral.speaker.SpeakerPeripheral;
 import dan200.computercraft.shared.peripheral.speaker.SpeakerPosition;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
+import net.minecraftforge.network.PacketDistributor;
 import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
@@ -45,17 +46,20 @@ public class NarratorPeripheral extends SpeakerPeripheral {
         this.blockEntity = blockEntity;
     }
 
-    // ---- SpeakerPeripheral abstract methods (overridable for turtles) ----
-
-    @Override
-    protected ServerLevel getLevel() {
-        if (blockEntity != null && blockEntity.getWorld() instanceof ServerLevel sl) return sl;
-        return null;
-    }
+    // ---- SpeakerPeripheral abstract method (only getPosition in CC 1.20.1) ----
 
     @Override
     public SpeakerPosition getPosition() {
-        return SpeakerPosition.of(getLevel(), Vec3.atCenterOf(getPos()));
+        Level level = blockEntity != null ? blockEntity.getWorld() : null;
+        return SpeakerPosition.of(level, Vec3.atCenterOf(getPos()));
+    }
+
+    // ---- Helper to extract ServerLevel (for playVoice / turtle overrides) ----
+
+    @Nullable
+    protected ServerLevel getLevel() {
+        Level level = getPosition().level();
+        return level instanceof ServerLevel sl ? sl : null;
     }
 
     // ---- IPeripheral ----
@@ -108,12 +112,11 @@ public class NarratorPeripheral extends SpeakerPeripheral {
         BlockPos pos = getPos();
         Vec3 center = Vec3.atCenterOf(pos);
 
-        SpeakTextPayload payload = SpeakTextPayload.of(decodedText);
-        ClientboundCustomPayloadPacket packet = new ClientboundCustomPayloadPacket(payload);
+        var payload = new LinguaPeripheralsNetwork.SpeakTextPacket(decodedText);
 
         for (ServerPlayer player : serverLevel.getServer().getPlayerList().getPlayers()) {
             if (isPlayerInRange(player, center, serverLevel, r)) {
-                player.connection.send(packet);
+                LinguaPeripheralsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), payload);
             }
         }
 

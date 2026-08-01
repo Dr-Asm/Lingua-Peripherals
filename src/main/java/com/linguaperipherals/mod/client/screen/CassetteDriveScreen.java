@@ -9,7 +9,7 @@ import net.minecraft.world.entity.player.Inventory;
 
 public class CassetteDriveScreen extends AbstractContainerScreen<CassetteDriveMenu> {
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("linguaperipherals", "textures/gui/cassette_drive.png");
+            new ResourceLocation("linguaperipherals", "textures/gui/cassette_drive.png");
 
     public CassetteDriveScreen(CassetteDriveMenu menu, Inventory playerInv, Component title) {
         super(menu, playerInv, title);

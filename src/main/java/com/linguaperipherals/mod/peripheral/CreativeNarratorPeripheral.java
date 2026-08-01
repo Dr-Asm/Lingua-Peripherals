@@ -1,13 +1,13 @@
 package com.linguaperipherals.mod.peripheral;
 
 import com.linguaperipherals.mod.block.entity.CreativeNarratorBlockEntity;
-import com.linguaperipherals.mod.network.SpeakTextPayload;
+import com.linguaperipherals.mod.network.LinguaPeripheralsNetwork;
+import com.linguaperipherals.mod.util.LinguaUtility;
 import dan200.computercraft.api.lua.LuaException;
 import dan200.computercraft.api.lua.LuaFunction;
-import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import com.linguaperipherals.mod.util.LinguaUtility;
+import net.minecraftforge.network.PacketDistributor;
 
 public class CreativeNarratorPeripheral extends NarratorPeripheral {
 
@@ -27,11 +27,10 @@ public class CreativeNarratorPeripheral extends NarratorPeripheral {
         ServerLevel serverLevel = getLevel();
         if (serverLevel == null) return false;
 
-        SpeakTextPayload payload = SpeakTextPayload.of(decodedText);
-        ClientboundCustomPayloadPacket packet = new ClientboundCustomPayloadPacket(payload);
+        var payload = new LinguaPeripheralsNetwork.SpeakTextPacket(decodedText);
 
         for (ServerPlayer player : serverLevel.getServer().getPlayerList().getPlayers()) {
-            player.connection.send(packet);
+            LinguaPeripheralsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), payload);
         }
 
         scheduleFinishEvent(decodedText, serverLevel);

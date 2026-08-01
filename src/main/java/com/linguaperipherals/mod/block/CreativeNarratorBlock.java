@@ -1,6 +1,5 @@
 package com.linguaperipherals.mod.block;
 
-import com.mojang.serialization.MapCodec;
 import com.linguaperipherals.mod.block.entity.CreativeNarratorBlockEntity;
 import com.linguaperipherals.mod.init.ModBlockEntities;
 import net.minecraft.core.BlockPos;
@@ -20,16 +19,10 @@ import org.jetbrains.annotations.Nullable;
 public class CreativeNarratorBlock extends HorizontalDirectionalBlock implements EntityBlock {
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
     @SuppressWarnings("deprecation")
-    private static final MapCodec<CreativeNarratorBlock> CODEC = simpleCodec(CreativeNarratorBlock::new);
 
     public CreativeNarratorBlock(Properties properties) {
         super(properties);
         this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH));
-    }
-
-    @Override
-    protected MapCodec<? extends HorizontalDirectionalBlock> codec() {
-        return CODEC;
     }
 
     @Override

@@ -1,56 +1,57 @@
 plugins {
-    id 'java-library'
-    id 'net.neoforged.moddev' version '2.0.76'
+    id 'eclipse'
+    id 'idea'
+    id 'maven-publish'
+    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
 }
 
 version = '2.0.0'
 group = 'com.linguaperipherals'
 
-base {
-    archivesName = 'linguaperipherals'
-}
+base { archivesName = 'linguaperipherals' }
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
-neoForge {
-    version = '21.1.228'
+minecraft {
+    mappings channel: 'official', version: '1.20.1'
     runs {
         client {
-            client()
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            mods { linguaperipherals { source sourceSets.main } }
         }
         server {
-            server()
-        }
-    }
-    mods {
-        linguaperipherals {
-            sourceSet sourceSets.main
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            mods { linguaperipherals { source sourceSets.main } }
         }
     }
 }
 
 repositories {
     flatDir { dirs 'libs' }
+    maven { url "https://api.modrinth.com/maven"; content { includeGroup "maven.modrinth" } }
 }
 
 dependencies {
-    // Mandatory: CC:Tweaked
-    implementation fileTree(dir: 'libs', include: ['cc-tweaked-*.jar'])
-    // Compile-only: Create + its transitive deps + JEI (for subtype plugin)
-    compileOnly fileTree(dir: 'libs', include: ['create-*.jar', 'Registrate-*.jar', 'ponder-*.jar', 'jei-*.jar'])
-    // Other runClient mods
-    runtimeOnly fileTree(dir: 'libs', exclude: ['cc-tweaked-*.jar', 'create-*.jar', 'Registrate-*.jar', 'ponder-*.jar'])
+    minecraft 'net.minecraftforge:forge:1.20.1-47.3.0'
+    implementation fg.deobf("maven.modrinth:cc-tweaked:1.120.0")
+    // Create 0.5.1j — compileOnly; runtime Mixin refmap incompatible with available Forge builds
+    // FlapDisplay API unchanged in later Create versions — compiles and works in production
+    compileOnly "maven.modrinth:create:1.20.1-0.5.1.j"
 }
 
 tasks.named('jar', Jar).configure {
-    manifest {
-        attributes([
-            'Specification-Title'   : 'Lingua Peripherals',
-            'Specification-Vendor'  : 'linguaperipherals',
-            'Specification-Version' : '1',
-            'Implementation-Title'  : 'Lingua Peripherals',
-            'Implementation-Version': project.version,
-            'Implementation-Vendor' : 'linguaperipherals',
-        ])
-    }
+    manifest { attributes([
+        'Specification-Title': 'Lingua Peripherals',
+        'Specification-Vendor': 'linguaperipherals',
+        'Specification-Version': '1',
+        'Implementation-Title': 'Lingua Peripherals',
+        'Implementation-Version': project.version,
+        'Implementation-Vendor': 'linguaperipherals'
+    ])}
 }
+
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }

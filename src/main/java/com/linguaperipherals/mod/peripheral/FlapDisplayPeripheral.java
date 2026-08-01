@@ -132,7 +132,7 @@ public class FlapDisplayPeripheral implements IPeripheral {
         int end = cursorX + decoded.length();
         String prefix = cur.substring(0, Math.min(cursorX, cur.length()));
         String suffix = cur.length() > end ? cur.substring(end) : "";
-        ctrl.applyTextManually(cursorY, Component.literal(prefix + decoded + suffix));
+        ctrl.applyTextManually(cursorY, prefix + decoded + suffix);
         ctrl.sendData();
         cursorX += decoded.length();
     }
@@ -146,7 +146,7 @@ public class FlapDisplayPeripheral implements IPeripheral {
         List<FlapDisplayLayout> ctrlLines = ctrl.getLines();
         if (index < 0 || index >= ctrlLines.size())
             throw new LuaException("line out of range");
-        ctrl.applyTextManually(index, Component.literal(decoded));
+        ctrl.applyTextManually(index, decoded);
         ctrl.sendData();
     }
 
@@ -172,7 +172,7 @@ public class FlapDisplayPeripheral implements IPeripheral {
         FlapDisplayBlockEntity ctrl = getController();
         if (ctrl == null) return;
         for (int i = 0; i < ctrl.getLines().size(); i++)
-            ctrl.applyTextManually(i, Component.empty());
+            ctrl.applyTextManually(i, "");
         ctrl.sendData();
     }
 

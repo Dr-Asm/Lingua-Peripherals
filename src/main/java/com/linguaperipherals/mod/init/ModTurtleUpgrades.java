@@ -3,33 +3,28 @@ package com.linguaperipherals.mod.init;
 import com.linguaperipherals.mod.LinguaPeripherals;
 import com.linguaperipherals.mod.turtle.TurtleCreativeNarrator;
 import com.linguaperipherals.mod.turtle.TurtleNarrator;
-import dan200.computercraft.api.turtle.ITurtleUpgrade;
-import dan200.computercraft.api.upgrades.UpgradeType;
-import net.neoforged.neoforge.registries.DeferredRegister;
-import net.neoforged.bus.api.IEventBus;
-
-import java.util.function.Supplier;
+import dan200.computercraft.api.turtle.TurtleUpgradeSerialiser;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.RegistryObject;
 
 public class ModTurtleUpgrades {
-    public static final DeferredRegister<UpgradeType<? extends ITurtleUpgrade>> REGISTRY =
-            DeferredRegister.create(ITurtleUpgrade.typeRegistry(), LinguaPeripherals.MODID);
+    private static final ResourceKey<net.minecraft.core.Registry<TurtleUpgradeSerialiser<?>>> REGISTRY_KEY =
+            ResourceKey.createRegistryKey(new ResourceLocation("computercraft", "turtle_upgrade_serialiser"));
 
-    public static final Supplier<UpgradeType<TurtleNarrator>> NARRATOR =
-            REGISTRY.register("narrator", () -> {
-                // Deferred self-reference to avoid circular init
-                @SuppressWarnings("unchecked")
-                UpgradeType<TurtleNarrator>[] holder = new UpgradeType[1];
-                holder[0] = UpgradeType.simpleWithCustomItem(stack -> new TurtleNarrator(stack, holder[0]));
-                return holder[0];
-            });
+    public static final DeferredRegister<TurtleUpgradeSerialiser<?>> REGISTRY =
+            DeferredRegister.create(REGISTRY_KEY, LinguaPeripherals.MODID);
 
-    public static final Supplier<UpgradeType<TurtleCreativeNarrator>> CREATIVE_NARRATOR =
-            REGISTRY.register("creative_narrator", () -> {
-                @SuppressWarnings("unchecked")
-                UpgradeType<TurtleCreativeNarrator>[] holder = new UpgradeType[1];
-                holder[0] = UpgradeType.simpleWithCustomItem(stack -> new TurtleCreativeNarrator(stack, holder[0]));
-                return holder[0];
-            });
+    public static final RegistryObject<TurtleUpgradeSerialiser<TurtleNarrator>> NARRATOR =
+            REGISTRY.register("narrator",
+                    () -> TurtleUpgradeSerialiser.simpleWithCustomItem(TurtleNarrator::new));
+
+    public static final RegistryObject<TurtleUpgradeSerialiser<TurtleCreativeNarrator>> CREATIVE_NARRATOR =
+            REGISTRY.register("creative_narrator",
+                    () -> TurtleUpgradeSerialiser.simpleWithCustomItem(TurtleCreativeNarrator::new));
 
     public static void register(IEventBus modEventBus) {
         REGISTRY.register(modEventBus);
