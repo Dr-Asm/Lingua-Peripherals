@@ -12,17 +12,14 @@
       "item": "minecraft:dried_kelp"
     },
     {
-      "item": "minecraft:brown_dye"
+      "item": "minecraft:purple_dye"
     }
   ],
   "result": {
-    "id": "linguaperipherals:cassette_tape",
     "count": 1,
-    "components": {
-      "minecraft:dyed_color": {
-        "rgb": 5320730,
-        "show_in_tooltip": false
-      }
+    "item": "linguaperipherals:cassette_tape",
+    "nbt": {
+      "CassetteColor": 8073150
     }
   }
 }

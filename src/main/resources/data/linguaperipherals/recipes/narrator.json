@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    {
+      "item": "computercraft:speaker"
+    },
+    {
+      "tag": "linguaperipherals:skulls"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "item": "linguaperipherals:narrator"
+  }
+}

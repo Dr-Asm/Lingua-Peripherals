@@ -15,7 +15,7 @@
     }
   },
   "result": {
-    "id": "linguaperipherals:cassette_drive",
-    "count": 1
+    "count": 1,
+    "item": "linguaperipherals:cassette_drive"
   }
 }

@@ -5,7 +5,7 @@ plugins {
     id 'net.minecraftforge.gradle' version '[6.0,6.2)'
 }
 
-version = '2.0.1'
+version = '2.0.2'
 group = 'com.linguaperipherals'
 
 base { archivesName = 'linguaperipherals-1.20.1-forge' }
@@ -33,6 +33,7 @@ minecraft {
 
 repositories {
     flatDir { dirs 'libs' }
+    mavenLocal()
     maven { url "https://api.modrinth.com/maven"; content { includeGroup "maven.modrinth" } }
 }
 
@@ -40,6 +41,8 @@ dependencies {
     minecraft 'net.minecraftforge:forge:1.20.1-47.4.22'
     implementation fg.deobf("maven.modrinth:cc-tweaked:1.120.0")
     compileOnly "maven.modrinth:create:1.20.1-0.5.1.j"
+    // JEI Forge — mavenLocal for fg.deobf SRG remap (modrinth maven serves fabric build)
+    runtimeOnly fg.deobf("maven.modrinth:jei:15.49.0.198-forge")
 }
 
 tasks.named('jar', Jar).configure {
